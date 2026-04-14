@@ -12,7 +12,25 @@ mesure_bp = Blueprint('mesure', __name__, url_prefix='/api/mesures')
 
 @mesure_bp.route('', methods=['POST'])
 def create_mesure():
-    """Crée une nouvelle mesure"""
+    """
+    Crée une nouvelle mesure
+    ---
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - idEntrepot
+            - temperature
+            - humidite
+    responses:
+      201:
+        description: Mesure créée
+        schema:
+          type: object
+    """
     try:
         data = request.get_json()
         
@@ -46,7 +64,27 @@ def create_mesure():
 
 @mesure_bp.route('/entrepot/<string:entrepot_id>', methods=['GET'])
 def get_mesures_by_entrepot(entrepot_id):
-    """Mesures d'un entrepôt"""
+    """
+    Mesures d'un entrepôt
+    ---
+    parameters:
+      - name: entrepot_id
+        in: path
+        required: true
+        type: string
+      - name: limit
+        in: query
+        type: integer
+        default: 100
+      - name: from_date
+        in: query
+        type: string
+    responses:
+      200:
+        description: Liste des mesures
+        schema:
+          type: array
+    """
     try:
         session = get_db()
         
@@ -73,7 +111,20 @@ def get_mesures_by_entrepot(entrepot_id):
 
 @mesure_bp.route('/<string:mesure_id>', methods=['GET'])
 def get_mesure(mesure_id):
-    """Détails d'une mesure"""
+    """
+    Détails d'une mesure
+    ---
+    parameters:
+      - name: mesure_id
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        description: Détails de la mesure
+        schema:
+          type: object
+    """
     try:
         session = get_db()
         mesure = session.query(Mesure).filter(Mesure.idMesure == mesure_id).first()

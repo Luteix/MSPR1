@@ -44,6 +44,9 @@ def create_app():
                 "route": '/apispec_1.json',
                 "rule_filter": lambda rule: True,
                 "model_filter": lambda tag: True,
+                "title": "API FutureKawa",
+                "description": "API REST pour la gestion de la chaîne d'approvisionnement du café",
+                "version": "1.0.0"
             }
         ],
         "static_url_path": "/flasgger_static",

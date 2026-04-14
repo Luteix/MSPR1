@@ -10,7 +10,15 @@ pays_bp = Blueprint('pays', __name__, url_prefix='/api/pays')
 
 @pays_bp.route('', methods=['GET'])
 def get_all_pays():
-    """Liste de tous les pays"""
+    """
+    Liste de tous les pays
+    ---
+    responses:
+      200:
+        description: Liste des pays
+        schema:
+          type: array
+    """
     try:
         pays = PaysService.get_all_pays()
         return jsonify(pays), 200
@@ -19,7 +27,20 @@ def get_all_pays():
 
 @pays_bp.route('/<string:pays_id>', methods=['GET'])
 def get_pays(pays_id):
-    """Détails d'un pays"""
+    """
+    Détails d'un pays
+    ---
+    parameters:
+      - name: pays_id
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        description: Détails du pays
+        schema:
+          type: object
+    """
     try:
         pays = PaysService.get_pays_by_id(pays_id)
         if not pays:
@@ -30,7 +51,20 @@ def get_pays(pays_id):
 
 @pays_bp.route('/<string:pays_id>/exploitations', methods=['GET'])
 def get_exploitations_by_pays(pays_id):
-    """Exploitations d'un pays"""
+    """
+    Exploitations d'un pays
+    ---
+    parameters:
+      - name: pays_id
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        description: Liste des exploitations
+        schema:
+          type: array
+    """
     try:
         exploitations = PaysService.get_exploitations_by_pays(pays_id)
         return jsonify(exploitations), 200
@@ -39,7 +73,24 @@ def get_exploitations_by_pays(pays_id):
 
 @pays_bp.route('/<string:pays_id>/mesures', methods=['GET'])
 def get_mesures_history(pays_id):
-    """Historique des températures"""
+    """
+    Historique des températures
+    ---
+    parameters:
+      - name: pays_id
+        in: path
+        required: true
+        type: string
+      - name: days
+        in: query
+        type: integer
+        default: 7
+    responses:
+      200:
+        description: Historique des températures
+        schema:
+          type: array
+    """
     try:
         days = request.args.get('days', 7, type=int)
         history = PaysService.get_mesures_history(pays_id, days)
@@ -49,7 +100,27 @@ def get_mesures_history(pays_id):
 
 @pays_bp.route('', methods=['POST'])
 def create_pays():
-    """Crée un nouveau pays"""
+    """
+    Crée un nouveau pays
+    ---
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - nom
+            - temperatureMin
+            - temperatureMax
+            - humiditeMin
+            - humiditeMax
+    responses:
+      201:
+        description: Pays créé
+        schema:
+          type: object
+    """
     try:
         data = request.get_json()
         
@@ -66,7 +137,25 @@ def create_pays():
 
 @pays_bp.route('/<string:pays_id>', methods=['PUT'])
 def update_pays(pays_id):
-    """Met à jour un pays"""
+    """
+    Met à jour un pays
+    ---
+    parameters:
+      - name: pays_id
+        in: path
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+    responses:
+      200:
+        description: Pays mis à jour
+        schema:
+          type: object
+    """
     try:
         data = request.get_json()
         pays = PaysService.update_pays(pays_id, data)
@@ -80,7 +169,20 @@ def update_pays(pays_id):
 
 @pays_bp.route('/<string:pays_id>', methods=['DELETE'])
 def delete_pays(pays_id):
-    """Supprime un pays"""
+    """
+    Supprime un pays
+    ---
+    parameters:
+      - name: pays_id
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        description: Pays supprimé
+        schema:
+          type: object
+    """
     try:
         success = PaysService.delete_pays(pays_id)
         if not success:

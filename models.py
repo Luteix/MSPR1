@@ -244,7 +244,7 @@ class LotGrains(Base):
     Un lot est caractérisé par sa date d'entrée en stock,
     son statut de conformité et sa date de sortie éventuelle.
     """
-    __tablename__ = 'lot_grains'
+    __tablename__ = 'lotgrains'
     
     # Clé primaire UUID
     idLotGrains = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -364,7 +364,7 @@ class Alerte(Base):
     
     # Clés étrangères (optionnelles selon le type d'alerte)
     idMesure = Column(String(36), ForeignKey('mesure.idMesure'), nullable=True)        # Pour alertes environnementales
-    idLotGrains = Column(String(36), ForeignKey('lot_grains.idLotGrains'), nullable=True)  # Pour alertes sur lots
+    idLotGrains = Column(String(36), ForeignKey('lotgrains.idLotGrains'), nullable=True)  # Pour alertes sur lots
     idEntrepot = Column(String(36), ForeignKey('entrepot.idEntrepot'), nullable=False)  # Entrepôt concerné
     
     # Informations sur l'alerte

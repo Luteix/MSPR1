@@ -10,7 +10,15 @@ alerte_bp = Blueprint('alerte', __name__, url_prefix='/api/alertes')
 
 @dashboard_bp.route('/summary', methods=['GET'])
 def get_dashboard_summary():
-    """Résumé global du dashboard"""
+    """
+    Résumé global du dashboard
+    ---
+    responses:
+      200:
+        description: OK
+        schema:
+          type: object
+    """
     try:
         summary = DashboardService.get_dashboard_summary()
         return jsonify(summary), 200
@@ -19,7 +27,20 @@ def get_dashboard_summary():
 
 @dashboard_bp.route('/alertes/recentes', methods=['GET'])
 def get_recent_alertes():
-    """Alertes récentes"""
+    """
+    Alertes récentes
+    ---
+    parameters:
+      - name: limit
+        in: query
+        type: integer
+        default: 5
+    responses:
+      200:
+        description: OK
+        schema:
+          type: array
+    """
     try:
         limit = request.args.get('limit', 5, type=int)
         alertes = AlerteService.get_recent_alertes(limit)
@@ -29,7 +50,28 @@ def get_recent_alertes():
 
 @alerte_bp.route('', methods=['GET'])
 def get_all_alertes():
-    """Toutes les alertes avec filtres"""
+    """
+    Toutes les alertes avec filtres
+    ---
+    parameters:
+      - name: pays_id
+        in: query
+        type: string
+      - name: type_alerte
+        in: query
+        type: string
+      - name: date_from
+        in: query
+        type: string
+      - name: date_to
+        in: query
+        type: string
+    responses:
+      200:
+        description: OK
+        schema:
+          type: array
+    """
     try:
         pays_id = request.args.get('pays')
         type_alerte = request.args.get('type')
@@ -43,7 +85,24 @@ def get_all_alertes():
 
 @alerte_bp.route('', methods=['POST'])
 def create_alerte():
-    """Crée une nouvelle alerte"""
+    """
+    Crée une nouvelle alerte
+    ---
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - idEntrepot
+            - type
+    responses:
+      201:
+        description: Created
+        schema:
+          type: object
+    """
     try:
         data = request.get_json()
         
@@ -58,7 +117,27 @@ def create_alerte():
 
 @alerte_bp.route('/<string:alerte_id>', methods=['PUT'])
 def update_alerte_statut(alerte_id):
-    """Met à jour le statut d'une alerte"""
+    """
+    Met à jour le statut d'une alerte
+    ---
+    parameters:
+      - name: alerte_id
+        in: path
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - statut
+    responses:
+      200:
+        description: OK
+        schema:
+          type: object
+    """
     try:
         data = request.get_json()
         
