@@ -1,13 +1,16 @@
+"""
+Contrôleur pour la gestion des pays
+"""
+
 from flask import Blueprint, request, jsonify
 from services.pays_service import PaysService
 
+# Blueprint pour les routes /api/pays/*
 pays_bp = Blueprint('pays', __name__, url_prefix='/api/pays')
 
 @pays_bp.route('', methods=['GET'])
 def get_all_pays():
-    """
-    Liste de tous les pays
-    """
+    """Récupère la liste de tous les pays"""
     try:
         pays = PaysService.get_all_pays()
         return jsonify(pays), 200
@@ -16,9 +19,7 @@ def get_all_pays():
 
 @pays_bp.route('/<string:pays_id>', methods=['GET'])
 def get_pays(pays_id):
-    """
-    Récupère les infos d'un pays
-    """
+    """Récupère les détails d'un pays spécifique"""
     try:
         pays = PaysService.get_pays_by_id(pays_id)
         if not pays:
@@ -29,9 +30,7 @@ def get_pays(pays_id):
 
 @pays_bp.route('/<string:pays_id>/exploitations', methods=['GET'])
 def get_exploitations_by_pays(pays_id):
-    """
-    Liste des exploitations du pays avec statistiques
-    """
+    """Récupère les exploitations d'un pays avec statistiques"""
     try:
         exploitations = PaysService.get_exploitations_by_pays(pays_id)
         return jsonify(exploitations), 200
@@ -40,9 +39,7 @@ def get_exploitations_by_pays(pays_id):
 
 @pays_bp.route('/<string:pays_id>/mesures/history', methods=['GET'])
 def get_mesures_history(pays_id):
-    """
-    Historique température moyenne des 7 derniers jours
-    """
+    """Récupère l'historique des températures moyennes"""
     try:
         days = request.args.get('days', 7, type=int)
         history = PaysService.get_mesures_history(pays_id, days)
@@ -52,9 +49,7 @@ def get_mesures_history(pays_id):
 
 @pays_bp.route('', methods=['POST'])
 def create_pays():
-    """
-    Créer un nouveau pays
-    """
+    """Crée un nouveau pays"""
     try:
         data = request.get_json()
         
@@ -71,9 +66,7 @@ def create_pays():
 
 @pays_bp.route('/<string:pays_id>', methods=['PUT'])
 def update_pays(pays_id):
-    """
-    Modifier un pays
-    """
+    """Met à jour un pays existant"""
     try:
         data = request.get_json()
         pays = PaysService.update_pays(pays_id, data)
@@ -87,9 +80,7 @@ def update_pays(pays_id):
 
 @pays_bp.route('/<string:pays_id>', methods=['DELETE'])
 def delete_pays(pays_id):
-    """
-    Supprimer un pays
-    """
+    """Supprime un pays"""
     try:
         success = PaysService.delete_pays(pays_id)
         if not success:

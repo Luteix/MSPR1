@@ -1,13 +1,16 @@
+"""
+Contrôleur pour la gestion des lots de grains
+"""
+
 from flask import Blueprint, request, jsonify
 from services.lot_service import LotService
 
+# Blueprint pour les routes /api/lots/*
 lot_bp = Blueprint('lot', __name__, url_prefix='/api/lots')
 
 @lot_bp.route('', methods=['GET'])
 def get_all_lots():
-    """
-    Liste de tous les lots avec entrepôt, exploitation et pays
-    """
+    """Récupère la liste de tous les lots"""
     try:
         lots = LotService.get_all_lots()
         return jsonify(lots), 200
@@ -16,9 +19,7 @@ def get_all_lots():
 
 @lot_bp.route('/<string:lot_id>', methods=['GET'])
 def get_lot(lot_id):
-    """
-    Récupère les infos du lot avec entrepôt, exploitation et pays
-    """
+    """Récupère les détails d'un lot spécifique"""
     try:
         lot = LotService.get_lot_by_id(lot_id)
         if not lot:
@@ -29,11 +30,9 @@ def get_lot(lot_id):
 
 @lot_bp.route('/<string:lot_id>/mesures', methods=['GET'])
 def get_mesures_by_lot(lot_id):
-    """
-    Mesures température/humidité depuis la date de stockage du lot
-    """
+    """Récupère les mesures température/humidité d'un lot"""
     try:
-        # D'abord récupérer les infos du lot pour obtenir l'ID de l'entrepôt et la date de stockage
+        # Récupérer d'abord les infos du lot pour obtenir l'ID de l'entrepôt et la date de stockage
         lot = LotService.get_lot_by_id(lot_id)
         if not lot:
             return jsonify({'error': 'Lot non trouvé'}), 404
@@ -46,9 +45,7 @@ def get_mesures_by_lot(lot_id):
 
 @lot_bp.route('/<string:lot_id>/alertes', methods=['GET'])
 def get_alertes_by_lot(lot_id):
-    """
-    Historique des alertes liées à ce lot
-    """
+    """Récupère l'historique des alertes liées à un lot"""
     try:
         alertes = LotService.get_alertes_by_lot(lot_id)
         return jsonify(alertes), 200
@@ -57,9 +54,7 @@ def get_alertes_by_lot(lot_id):
 
 @lot_bp.route('/<string:lot_id>', methods=['PUT'])
 def update_lot(lot_id):
-    """
-    Mettre à jour le lot (principalement pour datSortie)
-    """
+    """Met à jour un lot existant"""
     try:
         data = request.get_json()
         lot = LotService.update_lot(lot_id, data)

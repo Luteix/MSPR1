@@ -1,13 +1,16 @@
+"""
+Contrôleur dashboard et alertes
+"""
+
 from flask import Blueprint, request, jsonify
 from services.dashboard_service import DashboardService, AlerteService
 
 dashboard_bp = Blueprint('dashboard', __name__, url_prefix='/api/dashboard')
+alerte_bp = Blueprint('alerte', __name__, url_prefix='/api/alertes')
 
 @dashboard_bp.route('/summary', methods=['GET'])
 def get_dashboard_summary():
-    """
-    Récupère les métriques globales et le résumé par pays
-    """
+    """Récupère le résumé global du dashboard"""
     try:
         summary = DashboardService.get_dashboard_summary()
         return jsonify(summary), 200
@@ -18,9 +21,7 @@ alerte_bp = Blueprint('alerte', __name__, url_prefix='/api/alertes')
 
 @alerte_bp.route('/recent', methods=['GET'])
 def get_recent_alertes():
-    """
-    Récupère les 5 dernières alertes déclenchées
-    """
+    """Récupère les dernières alertes"""
     try:
         limit = request.args.get('limit', 5, type=int)
         alertes = AlerteService.get_recent_alertes(limit)
@@ -30,9 +31,7 @@ def get_recent_alertes():
 
 @alerte_bp.route('', methods=['GET'])
 def get_all_alertes():
-    """
-    Récupère toutes les alertes avec filtres
-    """
+    """Récupère toutes les alertes avec filtres"""
     try:
         pays_id = request.args.get('pays')
         type_alerte = request.args.get('type')
@@ -46,9 +45,7 @@ def get_all_alertes():
 
 @alerte_bp.route('', methods=['POST'])
 def create_alerte():
-    """
-    Créer une nouvelle alerte
-    """
+    """Crée une nouvelle alerte manuellement"""
     try:
         data = request.get_json()
         
@@ -63,9 +60,7 @@ def create_alerte():
 
 @alerte_bp.route('/<string:alerte_id>/statut', methods=['PUT'])
 def update_alerte_statut(alerte_id):
-    """
-    Met à jour le statut d'une alerte
-    """
+    """Met à jour le statut d'une alerte"""
     try:
         data = request.get_json()
         

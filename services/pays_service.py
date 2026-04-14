@@ -1,3 +1,9 @@
+"""
+Services pour la gestion des pays
+
+Opérations CRUD et requêtes complexes pour les pays.
+"""
+
 from datetime import datetime, timedelta
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func, and_
@@ -8,9 +14,7 @@ class PaysService:
     
     @staticmethod
     def get_all_pays():
-        """
-        Récupère tous les pays
-        """
+        """Récupère tous les pays"""
         session = get_db()
         try:
             pays = session.query(Pays).all()
@@ -23,9 +27,7 @@ class PaysService:
     
     @staticmethod
     def get_pays_by_id(pays_id):
-        """
-        Récupère un pays par son ID
-        """
+        """Récupère un pays par son UUID"""
         session = get_db()
         try:
             pays = session.query(Pays).filter(Pays.idPays == pays_id).first()
@@ -40,9 +42,7 @@ class PaysService:
     
     @staticmethod
     def get_exploitations_by_pays(pays_id):
-        """
-        Récupère les exploitations d'un pays avec statistiques
-        """
+        """Récupère les exploitations d'un pays avec statistiques"""
         session = get_db()
         try:
             exploitations = session.query(Exploitation).filter(Exploitation.idPays == pays_id).all()
@@ -95,9 +95,7 @@ class PaysService:
     
     @staticmethod
     def get_mesures_history(pays_id, days=7):
-        """
-        Historique température moyenne des derniers jours
-        """
+        """Historique des températures moyennes par jour"""
         session = get_db()
         try:
             date_debut = datetime.utcnow() - timedelta(days=days)
@@ -129,9 +127,7 @@ class PaysService:
     
     @staticmethod
     def create_pays(data):
-        """
-        Crée un nouveau pays
-        """
+        """Crée un nouveau pays"""
         session = get_db()
         try:
             pays = Pays(
@@ -152,9 +148,7 @@ class PaysService:
     
     @staticmethod
     def update_pays(pays_id, data):
-        """
-        Met à jour un pays
-        """
+        """Met à jour un pays existant"""
         session = get_db()
         try:
             pays = session.query(Pays).filter(Pays.idPays == pays_id).first()
@@ -177,9 +171,7 @@ class PaysService:
     
     @staticmethod
     def delete_pays(pays_id):
-        """
-        Supprime un pays
-        """
+        """Supprime un pays"""
         session = get_db()
         try:
             pays = session.query(Pays).filter(Pays.idPays == pays_id).first()
