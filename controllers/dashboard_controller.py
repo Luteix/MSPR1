@@ -10,18 +10,16 @@ alerte_bp = Blueprint('alerte', __name__, url_prefix='/api/alertes')
 
 @dashboard_bp.route('/summary', methods=['GET'])
 def get_dashboard_summary():
-    """Récupère le résumé global du dashboard"""
+    """Résumé global du dashboard"""
     try:
         summary = DashboardService.get_dashboard_summary()
         return jsonify(summary), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-alerte_bp = Blueprint('alerte', __name__, url_prefix='/api/alertes')
-
-@alerte_bp.route('/recent', methods=['GET'])
+@dashboard_bp.route('/alertes/recentes', methods=['GET'])
 def get_recent_alertes():
-    """Récupère les dernières alertes"""
+    """Alertes récentes"""
     try:
         limit = request.args.get('limit', 5, type=int)
         alertes = AlerteService.get_recent_alertes(limit)
@@ -31,7 +29,7 @@ def get_recent_alertes():
 
 @alerte_bp.route('', methods=['GET'])
 def get_all_alertes():
-    """Récupère toutes les alertes avec filtres"""
+    """Toutes les alertes avec filtres"""
     try:
         pays_id = request.args.get('pays')
         type_alerte = request.args.get('type')
@@ -45,7 +43,7 @@ def get_all_alertes():
 
 @alerte_bp.route('', methods=['POST'])
 def create_alerte():
-    """Crée une nouvelle alerte manuellement"""
+    """Crée une nouvelle alerte"""
     try:
         data = request.get_json()
         
@@ -58,7 +56,7 @@ def create_alerte():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@alerte_bp.route('/<string:alerte_id>/statut', methods=['PUT'])
+@alerte_bp.route('/<string:alerte_id>', methods=['PUT'])
 def update_alerte_statut(alerte_id):
     """Met à jour le statut d'une alerte"""
     try:

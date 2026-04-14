@@ -16,6 +16,7 @@ from controllers.exploitation_controller import exploitation_bp
 from controllers.entrepot_controller import entrepot_bp
 from controllers.lot_controller import lot_bp
 from controllers.dashboard_controller import dashboard_bp, alerte_bp
+from controllers.mesure_controller import mesure_bp
 
 def create_app():
     """Factory function pour créer et configurer l'application Flask"""
@@ -56,6 +57,7 @@ def create_app():
     app.register_blueprint(exploitation_bp)
     app.register_blueprint(entrepot_bp)
     app.register_blueprint(lot_bp)
+    app.register_blueprint(mesure_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(alerte_bp)
     

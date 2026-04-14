@@ -10,7 +10,7 @@ entrepot_bp = Blueprint('entrepot', __name__, url_prefix='/api/entrepots')
 
 @entrepot_bp.route('', methods=['GET'])
 def get_all_entrepots():
-    """Récupère la liste de tous les entrepôts"""
+    """Liste de tous les entrepôts"""
     try:
         entrepots = EntrepotService.get_all_entrepots()
         return jsonify(entrepots), 200
@@ -19,7 +19,7 @@ def get_all_entrepots():
 
 @entrepot_bp.route('/<string:entrepot_id>', methods=['GET'])
 def get_entrepot(entrepot_id):
-    """Récupère les détails d'un entrepôt spécifique"""
+    """Détails d'un entrepôt"""
     try:
         entrepot = EntrepotService.get_entrepot_by_id(entrepot_id)
         if not entrepot:
@@ -30,7 +30,7 @@ def get_entrepot(entrepot_id):
 
 @entrepot_bp.route('/<string:entrepot_id>/mesures', methods=['GET'])
 def get_mesures_by_entrepot(entrepot_id):
-    """Récupère les mesures température/humidité d'un entrepôt"""
+    """Mesures température/humidité d'un entrepôt"""
     try:
         periode = request.args.get('periode', 30, type=int)
         mesures = EntrepotService.get_mesures_by_entrepot(entrepot_id, periode)
@@ -40,7 +40,7 @@ def get_mesures_by_entrepot(entrepot_id):
 
 @entrepot_bp.route('/<string:entrepot_id>/lots', methods=['GET'])
 def get_lots_by_entrepot(entrepot_id):
-    """Récupère les lots stockés dans un entrepôt"""
+    """Lots stockés dans un entrepôt"""
     try:
         lots = EntrepotService.get_lots_by_entrepot(entrepot_id)
         return jsonify(lots), 200
@@ -49,7 +49,7 @@ def get_lots_by_entrepot(entrepot_id):
 
 @entrepot_bp.route('/<string:entrepot_id>/lots', methods=['POST'])
 def create_lot_in_entrepot(entrepot_id):
-    """Crée un nouveau lot dans un entrepôt spécifique"""
+    """Crée un nouveau lot dans un entrepôt"""
     try:
         data = request.get_json()
         
@@ -84,7 +84,7 @@ def create_entrepot():
 
 @entrepot_bp.route('/<string:entrepot_id>', methods=['PUT'])
 def update_entrepot(entrepot_id):
-    """Met à jour un entrepôt existant"""
+    """Met à jour un entrepôt"""
     try:
         data = request.get_json()
         entrepot = EntrepotService.update_entrepot(entrepot_id, data)

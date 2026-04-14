@@ -10,7 +10,7 @@ lot_bp = Blueprint('lot', __name__, url_prefix='/api/lots')
 
 @lot_bp.route('', methods=['GET'])
 def get_all_lots():
-    """Récupère la liste de tous les lots"""
+    """Liste de tous les lots"""
     try:
         lots = LotService.get_all_lots()
         return jsonify(lots), 200
@@ -19,7 +19,7 @@ def get_all_lots():
 
 @lot_bp.route('/<string:lot_id>', methods=['GET'])
 def get_lot(lot_id):
-    """Récupère les détails d'un lot spécifique"""
+    """Détails d'un lot"""
     try:
         lot = LotService.get_lot_by_id(lot_id)
         if not lot:
@@ -30,7 +30,7 @@ def get_lot(lot_id):
 
 @lot_bp.route('/<string:lot_id>/mesures', methods=['GET'])
 def get_mesures_by_lot(lot_id):
-    """Récupère les mesures température/humidité d'un lot"""
+    """Mesures température/humidité d'un lot"""
     try:
         # Récupérer d'abord les infos du lot pour obtenir l'ID de l'entrepôt et la date de stockage
         lot = LotService.get_lot_by_id(lot_id)
@@ -45,7 +45,7 @@ def get_mesures_by_lot(lot_id):
 
 @lot_bp.route('/<string:lot_id>/alertes', methods=['GET'])
 def get_alertes_by_lot(lot_id):
-    """Récupère l'historique des alertes liées à un lot"""
+    """Historique des alertes d'un lot"""
     try:
         alertes = LotService.get_alertes_by_lot(lot_id)
         return jsonify(alertes), 200
@@ -54,7 +54,7 @@ def get_alertes_by_lot(lot_id):
 
 @lot_bp.route('/<string:lot_id>', methods=['PUT'])
 def update_lot(lot_id):
-    """Met à jour un lot existant"""
+    """Met à jour un lot"""
     try:
         data = request.get_json()
         lot = LotService.update_lot(lot_id, data)
