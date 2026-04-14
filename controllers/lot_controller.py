@@ -3,6 +3,17 @@ from services.lot_service import LotService
 
 lot_bp = Blueprint('lot', __name__, url_prefix='/api/lots')
 
+@lot_bp.route('', methods=['GET'])
+def get_all_lots():
+    """
+    Liste de tous les lots avec entrepôt, exploitation et pays
+    """
+    try:
+        lots = LotService.get_all_lots()
+        return jsonify(lots), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @lot_bp.route('/<string:lot_id>', methods=['GET'])
 def get_lot(lot_id):
     """

@@ -7,6 +7,26 @@ from database import get_db, commit_session, rollback_session
 class LotService:
     
     @staticmethod
+    def get_all_lots():
+        """
+        Récupère tous les lots avec entrepôt, exploitation et pays
+        """
+        session = get_db()
+        try:
+            lots = session.query(LotGrains).options(
+                joinedload(LotGrains.entrepot)
+                .joinedload(Entrepot.exploitation)
+                .joinedload(Exploitation.pays)
+            ).order_by(LotGrains.datSto.desc()).all()
+            
+            return [lot.to_dict(include_hierarchy=True) for lot in lots]
+        except Exception as e:
+            rollback_session()
+            raise e
+        finally:
+            session.close()
+    
+    @staticmethod
     def get_lot_by_id(lot_id):
         """
         Récupère les infos d'un lot avec entrepôt, exploitation et pays
