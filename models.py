@@ -316,8 +316,7 @@ class Mesure(Base):
     __tablename__ = 'mesures'
     
     # Clé primaire UUID
-    idMesure = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    
+    idMesure = Column(Integer, primary_key=True, autoincrement=True)    
     # Clé étrangère vers l'entrepôt où la mesure a été prise
     idEntrepot = Column(String(36), ForeignKey('entrepot.idEntrepot'), nullable=False)
     
@@ -363,7 +362,7 @@ class Alerte(Base):
     idAlerte = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     
     # Clés étrangères (optionnelles selon le type d'alerte)
-    idMesure = Column(String(36), ForeignKey('mesures.idMesure'), nullable=True)        # Pour alertes environnementales
+    idMesure = Column(Integer, ForeignKey('mesures.idMesure'), nullable=True)           # Pour alertes environnementales
     idLotGrains = Column(String(36), ForeignKey('lotgrains.idLotGrains'), nullable=True)  # Pour alertes sur lots
     idEntrepot = Column(String(36), ForeignKey('entrepot.idEntrepot'), nullable=False)  # Entrepôt concerné
     
