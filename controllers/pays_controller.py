@@ -1,21 +1,18 @@
-"""
-Contrôleur pour la gestion des pays
-"""
+"""Contrôleur des pays"""
 
 from flask import Blueprint, request, jsonify
 from services.pays_service import PaysService
 
-# Blueprint pour les routes /api/pays/*
 pays_bp = Blueprint('pays', __name__, url_prefix='/api/pays')
 
 @pays_bp.route('', methods=['GET'])
 def get_all_pays():
     """
-    Liste de tous les pays
+    Liste des pays
     ---
     responses:
       200:
-        description: Liste des pays
+        description: OK
         schema:
           type: array
     """
@@ -28,7 +25,7 @@ def get_all_pays():
 @pays_bp.route('/<string:pays_id>', methods=['GET'])
 def get_pays(pays_id):
     """
-    Détails d'un pays
+    Détails pays
     ---
     parameters:
       - name: pays_id
@@ -37,7 +34,7 @@ def get_pays(pays_id):
         type: string
     responses:
       200:
-        description: Détails du pays
+        description: OK
         schema:
           type: object
     """

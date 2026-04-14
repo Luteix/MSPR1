@@ -108,11 +108,11 @@ if __name__ == '__main__':
     
     # Test de connexion à la base de données
     if test_connection():
-        print("✓ Connexion à la base de données réussie")
+        print("Connexion à la base de données réussie")
         
         # Initialisation des tables
         init_db()
-        print("✓ Base de données initialisée")
+        print("Base de données initialisée")
         
         # Lancement de l'application
         app = create_app()
@@ -120,10 +120,10 @@ if __name__ == '__main__':
         host = os.getenv('HOST', '0.0.0.0')
         port = int(os.getenv('PORT', 5000))
         
-        print(f"✓ API démarrée sur http://{host}:{port}")
-        print(f"✓ Documentation disponible sur http://{host}:{port}/docs")
+        print(f"API démarrée sur http://{host}:{port}")
+        print(f"Documentation disponible sur http://{host}:{port}/docs")
         
         app.run(host=host, port=port, debug=app.config['DEBUG'])
     else:
-        print("✗ Erreur de connexion à la base de données")
+        print("Erreur de connexion à la base de données")
         exit(1)

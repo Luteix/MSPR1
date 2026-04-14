@@ -1,21 +1,18 @@
-"""
-Contrôleur pour la gestion des lots de grains
-"""
+"""Contrôleur des lots"""
 
 from flask import Blueprint, request, jsonify
 from services.lot_service import LotService
 
-# Blueprint pour les routes /api/lots/*
 lot_bp = Blueprint('lot', __name__, url_prefix='/api/lots')
 
 @lot_bp.route('', methods=['GET'])
 def get_all_lots():
     """
-    Liste de tous les lots
+    Liste des lots
     ---
     responses:
       200:
-        description: Liste des lots
+        description: OK
         schema:
           type: array
     """
@@ -28,7 +25,7 @@ def get_all_lots():
 @lot_bp.route('/<string:lot_id>', methods=['GET'])
 def get_lot(lot_id):
     """
-    Détails d'un lot
+    Détails lot
     ---
     parameters:
       - name: lot_id
@@ -37,7 +34,7 @@ def get_lot(lot_id):
         type: string
     responses:
       200:
-        description: Détails du lot
+        description: OK
         schema:
           type: object
     """

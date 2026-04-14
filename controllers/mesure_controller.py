@@ -1,19 +1,16 @@
-"""
-Contrôleur pour la gestion des mesures environnementales
-"""
+"""Contrôleur des mesures"""
 
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 from database import get_db, commit_session, rollback_session
 from models import Mesure
 
-# Blueprint pour les routes /api/mesures/*
 mesure_bp = Blueprint('mesure', __name__, url_prefix='/api/mesures')
 
 @mesure_bp.route('', methods=['POST'])
 def create_mesure():
     """
-    Crée une nouvelle mesure
+    Crée une mesure
     ---
     parameters:
       - name: body
@@ -27,7 +24,7 @@ def create_mesure():
             - humidite
     responses:
       201:
-        description: Mesure créée
+        description: Created
         schema:
           type: object
     """
@@ -65,7 +62,7 @@ def create_mesure():
 @mesure_bp.route('/entrepot/<string:entrepot_id>', methods=['GET'])
 def get_mesures_by_entrepot(entrepot_id):
     """
-    Mesures d'un entrepôt
+    Mesures entrepôt
     ---
     parameters:
       - name: entrepot_id
@@ -81,7 +78,7 @@ def get_mesures_by_entrepot(entrepot_id):
         type: string
     responses:
       200:
-        description: Liste des mesures
+        description: OK
         schema:
           type: array
     """
@@ -112,7 +109,7 @@ def get_mesures_by_entrepot(entrepot_id):
 @mesure_bp.route('/<string:mesure_id>', methods=['GET'])
 def get_mesure(mesure_id):
     """
-    Détails d'une mesure
+    Détails mesure
     ---
     parameters:
       - name: mesure_id
@@ -121,7 +118,7 @@ def get_mesure(mesure_id):
         type: string
     responses:
       200:
-        description: Détails de la mesure
+        description: OK
         schema:
           type: object
     """

@@ -1,21 +1,18 @@
-"""
-Contrôleur pour la gestion des entrepôts
-"""
+"""Contrôleur des entrepôts"""
 
 from flask import Blueprint, request, jsonify
 from services.entrepot_service import EntrepotService
 
-# Blueprint pour les routes /api/entrepots/*
 entrepot_bp = Blueprint('entrepot', __name__, url_prefix='/api/entrepots')
 
 @entrepot_bp.route('', methods=['GET'])
 def get_all_entrepots():
     """
-    Liste de tous les entrepôts
+    Liste des entrepôts
     ---
     responses:
       200:
-        description: Liste des entrepôts
+        description: OK
         schema:
           type: array
     """
@@ -28,7 +25,7 @@ def get_all_entrepots():
 @entrepot_bp.route('/<string:entrepot_id>', methods=['GET'])
 def get_entrepot(entrepot_id):
     """
-    Détails d'un entrepôt
+    Détails entrepôt
     ---
     parameters:
       - name: entrepot_id
@@ -37,7 +34,7 @@ def get_entrepot(entrepot_id):
         type: string
     responses:
       200:
-        description: Détails de l'entrepôt
+        description: OK
         schema:
           type: object
     """
@@ -65,7 +62,7 @@ def get_mesures_by_entrepot(entrepot_id):
         default: 30
     responses:
       200:
-        description: Historique des mesures
+        description: OK
         schema:
           type: array
     """
@@ -79,7 +76,7 @@ def get_mesures_by_entrepot(entrepot_id):
 @entrepot_bp.route('/<string:entrepot_id>/lots', methods=['GET'])
 def get_lots_by_entrepot(entrepot_id):
     """
-    Lots stockés dans un entrepôt
+    Lots entrepôt
     ---
     parameters:
       - name: entrepot_id
@@ -88,7 +85,7 @@ def get_lots_by_entrepot(entrepot_id):
         type: string
     responses:
       200:
-        description: Liste des lots
+        description: OK
         schema:
           type: array
     """
@@ -175,7 +172,7 @@ def create_entrepot():
 @entrepot_bp.route('/<string:entrepot_id>', methods=['PUT'])
 def update_entrepot(entrepot_id):
     """
-    Met à jour un entrepôt
+    Mesures entrepôt
     ---
     parameters:
       - name: entrepot_id
