@@ -1,0 +1,458 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "FutureKawa API",
+    "description": "API de gestion des stocks de grains de café vert",
+    "version": "1.0.0",
+    "contact": {
+      "name": "FutureKawa Team",
+      "email": "tech@futurekawa.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.futurekawa.com",
+      "description": "Serveur de production"
+    },
+    {
+      "url": "http://localhost:5000",
+      "description": "Serveur de développement"
+    }
+  ],
+  "paths": {
+    "/api/dashboard/summary": {
+      "get": {
+        "summary": "Récupère les métriques globales et le résumé par pays",
+        "tags": ["Dashboard"],
+        "responses": {
+          "200": {
+            "description": "Métriques du dashboard",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "metrics": {
+                      "type": "object",
+                      "properties": {
+                        "lotsStockes": {"type": "number"},
+                        "lotsAlerte": {"type": "number"},
+                        "lotsPerimes": {"type": "number"},
+                        "entrepotsActifs": {"type": "number"}
+                      }
+                    },
+                    "summaryByCountry": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "pays": {
+                            "type": "object",
+                            "properties": {
+                              "idPays": {"type": "string"},
+                              "nom": {"type": "string"}
+                            }
+                          },
+                          "nbExploitations": {"type": "number"},
+                          "nbEntrepots": {"type": "number"},
+                          "nbLots": {"type": "number"},
+                          "lotsEnAlerte": {"type": "number"},
+                          "derniereMesure": {"type": "string", "nullable": true}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pays": {
+      "get": {
+        "summary": "Liste de tous les pays",
+        "tags": ["Pays"],
+        "responses": {
+          "200": {
+            "description": "Liste des pays",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Pays"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Créer un nouveau pays",
+        "tags": ["Pays"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["nom", "temperatureMin", "temperatureMax", "humiditeMin", "humiditeMax"],
+                "properties": {
+                  "nom": {"type": "string", "maxLength": 100},
+                  "temperatureMin": {"type": "number"},
+                  "temperatureMax": {"type": "number"},
+                  "humiditeMin": {"type": "number"},
+                  "humiditeMax": {"type": "number"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pays créé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pays"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pays/{id}": {
+      "get": {
+        "summary": "Récupère les infos d'un pays",
+        "tags": ["Pays"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "string"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Détails du pays",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pays"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pays non trouvé"
+          }
+        }
+      },
+      "put": {
+        "summary": "Modifier un pays",
+        "tags": ["Pays"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "string"}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nom": {"type": "string"},
+                  "temperatureMin": {"type": "number"},
+                  "temperatureMax": {"type": "number"},
+                  "humiditeMin": {"type": "number"},
+                  "humiditeMax": {"type": "number"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pays mis à jour",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pays"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pays non trouvé"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Supprimer un pays",
+        "tags": ["Pays"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "string"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pays supprimé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean"}
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pays non trouvé"
+          }
+        }
+      }
+    },
+    "/api/exploitations": {
+      "get": {
+        "summary": "Liste de toutes les exploitations",
+        "tags": ["Exploitations"],
+        "responses": {
+          "200": {
+            "description": "Liste des exploitations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "idExploitation": {"type": "string"},
+                      "idPays": {"type": "string"},
+                      "nom": {"type": "string"},
+                      "nomPays": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Créer une nouvelle exploitation",
+        "tags": ["Exploitations"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["nom", "idPays"],
+                "properties": {
+                  "nom": {"type": "string", "maxLength": 150},
+                  "idPays": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Exploitation créée"
+          }
+        }
+      }
+    },
+    "/api/entrepots": {
+      "get": {
+        "summary": "Liste de tous les entrepôts",
+        "tags": ["Entrepôts"],
+        "responses": {
+          "200": {
+            "description": "Liste des entrepôts"
+          }
+        }
+      },
+      "post": {
+        "summary": "Créer un nouvel entrepôt",
+        "tags": ["Entrepôts"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["nom", "adresse", "limiteQte", "idExploitation"],
+                "properties": {
+                  "nom": {"type": "string"},
+                  "adresse": {"type": "string"},
+                  "limiteQte": {"type": "integer"},
+                  "idExploitation": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entrepôt créé"
+          }
+        }
+      }
+    },
+    "/api/lots/{id}": {
+      "get": {
+        "summary": "Récupère les infos du lot",
+        "tags": ["Lots"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "string"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Détails du lot"
+          },
+          "404": {
+            "description": "Lot non trouvé"
+          }
+        }
+      },
+      "put": {
+        "summary": "Mettre à jour le lot",
+        "tags": ["Lots"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "string"}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "datSortie": {"type": "string", "format": "date-time"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lot mis à jour"
+          },
+          "404": {
+            "description": "Lot non trouvé"
+          }
+        }
+      }
+    },
+    "/api/alertes/recent": {
+      "get": {
+        "summary": "Récupère les dernières alertes",
+        "tags": ["Alertes"],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {"type": "integer", "default": 5}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des alertes récentes"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Pays": {
+        "type": "object",
+        "properties": {
+          "idPays": {"type": "string"},
+          "nom": {"type": "string"},
+          "temperatureMin": {"type": "number"},
+          "temperatureMax": {"type": "number"},
+          "humiditeMin": {"type": "number"},
+          "humiditeMax": {"type": "number"}
+        }
+      },
+      "Exploitation": {
+        "type": "object",
+        "properties": {
+          "idExploitation": {"type": "string"},
+          "idPays": {"type": "string"},
+          "nom": {"type": "string"}
+        }
+      },
+      "Entrepot": {
+        "type": "object",
+        "properties": {
+          "idEntrepot": {"type": "string"},
+          "idExploitation": {"type": "string"},
+          "nom": {"type": "string"},
+          "adresse": {"type": "string"},
+          "limiteQte": {"type": "integer"}
+        }
+      },
+      "LotGrains": {
+        "type": "object",
+        "properties": {
+          "idLotGrains": {"type": "string"},
+          "idEntrepot": {"type": "string"},
+          "datSto": {"type": "string", "format": "date-time"},
+          "statut": {"type": "string", "enum": ["conforme", "en alerte", "périmé"]},
+          "datSortie": {"type": "string", "format": "date-time", "nullable": true}
+        }
+      },
+      "Alerte": {
+        "type": "object",
+        "properties": {
+          "idAlerte": {"type": "string"},
+          "idEntrepot": {"type": "string"},
+          "type": {"type": "string"},
+          "valeurMesuree": {"type": "number", "nullable": true},
+          "dateAlerte": {"type": "string", "format": "date-time"},
+          "statut": {"type": "string", "enum": ["en cours", "traitée"]}
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
+}

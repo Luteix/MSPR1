@@ -1,0 +1,787 @@
+Mékochi
+mekochi.k
+En ligne
+
+C'est le début du salon #api. 
+PASTAGA51 — 14:43
+# FutureKawa - Documentation API Backend
+
+## Table des Matières
+
+1. [Vue d'Ensemble](#vue-densemble)
+2. [Schémas de Données](#schémas-de-données)
+
+message.txt
+18 Ko
+﻿
+# FutureKawa - Documentation API Backend
+
+## Table des Matières
+
+1. [Vue d'Ensemble](#vue-densemble)
+2. [Schémas de Données](#schémas-de-données)
+3. [Endpoints Authentification](#endpoints-authentification)
+4. [Endpoints Dashboard](#endpoints-dashboard)
+5. [Endpoints Pays](#endpoints-pays)
+6. [Endpoints Exploitations](#endpoints-exploitations)
+7. [Endpoints Entrepôts](#endpoints-entrepôts)
+8. [Endpoints Lots](#endpoints-lots)
+9. [Endpoints Alertes](#endpoints-alertes)
+10. [Gestion des Erreurs](#gestion-des-erreurs)
+11. [Sécurité](#sécurité)
+
+---
+
+## Vue d'Ensemble
+
+FutureKawa est une plateforme de gestion des stocks de grains de café vert. L'API doit fournir des endpoints pour gérer la hiérarchie Pays -> Exploitation -> Entrepôt -> Lot, avec suivi des conditions environnementales et système d'alertes.
+
+**Base URL**: `https://api.futurekawa.com`
+**Version**: `v1`
+**Format**: JSON
+
+---
+
+## Schémas de Données
+
+### Pays
+```json
+{
+  "idPays": "string (UUID)",
+  "nom": "string (max 100 chars)",
+  "temperatureMin": "number (decimal, 1 precision)",
+  "temperatureMax": "number (decimal, 1 precision)",
+  "humiditeMin": "number (decimal, 1 precision)",
+  "humiditeMax": "number (decimal, 1 precision)"
+}
+```
+
+### Exploitation
+```json
+{
+  "idExploitation": "string (UUID)",
+  "idPays": "string (UUID, référence vers Pays)",
+  "nom": "string (max 150 chars)"
+}
+```
+
+### Utilisateur
+```json
+{
+  "idUtilisateur": "string (UUID)",
+  "idExploitation": "string (UUID, référence vers Exploitation)",
+  "nom": "string (max 50 chars)",
+  "prenom": "string (max 50 chars)",
+  "mail": "string (email valide)"
+}
+```
+
+### Entrepôt
+```json
+{
+  "idEntrepot": "string (UUID)",
+  "idExploitation": "string (UUID, référence vers Exploitation)",
+  "nom": "string (max 100 chars)",
+  "adresse": "string (max 255 chars)",
+  "limiteQte": "number (integer, > 0)"
+}
+```
+
+### Lot de Grains
+```json
+{
+  "idLotGrains": "string (UUID)",
+  "idEntrepot": "string (UUID, référence vers Entrepôt)",
+  "datSto": "string (ISO 8601)",
+  "statut": "enum: 'conforme' | 'en alerte' | 'périmé'",
+  "datSortie": "string (ISO 8601, nullable)"
+}
+```
+
+### Mesure
+```json
+{
+  "idMesure": "string (UUID)",
+  "idEntrepot": "string (UUID, référence vers Entrepôt)",
+  "temperature": "number (decimal, 1 precision)",
+  "humidite": "number (decimal, 1 precision)",
+  "datMesure": "string (ISO 8601)"
+}
+```
+
+### Alerte
+```json
+{
+  "idAlerte": "string (UUID)",
+  "idMesure": "string (UUID, nullable, référence vers Mesure)",
+  "idLotGrains": "string (UUID, nullable, référence vers LotGrains)",
+  "idEntrepot": "string (UUID, référence vers Entrepôt)",
+  "type": "enum: 'Température hors plage' | 'Humidité hors plage' | 'Lot périmé' | 'Lot proche péremption'",
+  "valeurMesuree": "number (nullable)",
+  "dateAlerte": "string (ISO 8601)",
+  "statut": "enum: 'en cours' | 'traitée'"
+}
+```
+
+---
+
+## Authentification
+
+**Important**: L'authentification sera gérée par une API externe dédiée. Cette API métier fonctionnera sans couche d'authentification propre.
+
+### Intégration avec API d'Authentification
+- L'API d'authentification externe fournira un token JWT
+- Ce token sera transmis dans les headers `Authorization: Bearer <token>`
+- L'API métier validera le token via l'API d'authentification
+- En cas de token invalide, retourner une erreur 401
+
+### Validation des Tokens (Endpoint Interne)
+```
+GET /api/auth/validate
+Headers: Authorization: Bearer <token>
+Response: 200 si valide, 401 si invalide
+```
+
+**Note**: Le frontend React utilisera directement l'API d'authentification pour le login, puis utilisera les tokens obtenus pour appeler cette API métier.
+
+---
+
+## Endpoints Dashboard
+
+### GET /api/dashboard/summary
+**Description**: Récupère les métriques globales et le résumé par pays
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+{
+  "metrics": {
+    "lotsStockes": "number",
+    "lotsAlerte": "number",
+    "lotsPerimes": "number",
+    "entrepotsActifs": "number"
+  },
+  "summaryByCountry": [
+    {
+      "pays": {
+        "idPays": "string",
+        "nom": "string"
+      },
+      "nbExploitations": "number",
+      "nbEntrepots": "number",
+      "nbLots": "number",
+      "lotsEnAlerte": "number",
+      "derniereMesure": "string (ISO 8601, nullable)"
+    }
+  ]
+}
+```
+
+### GET /api/alertes/recent
+**Description**: Récupère les 5 dernières alertes déclenchées
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+[
+  {
+    "idAlerte": "string",
+    "idEntrepot": "string",
+    "type": "string",
+    "dateAlerte": "string (ISO 8601)",
+    "statut": "string",
+    "nomEntrepot": "string"
+  }
+]
+```
+
+---
+
+## Endpoints Pays
+
+### GET /api/pays
+**Description**: Liste de tous les pays
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+[
+  {
+    "idPays": "string",
+    "nom": "string",
+    "temperatureMin": "number",
+    "temperatureMax": "number",
+    "humiditeMin": "number",
+    "humiditeMax": "number"
+  }
+]
+```
+
+### GET /api/pays/:id
+**Description**: Récupère les infos d'un pays
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+{
+  "idPays": "string",
+  "nom": "string",
+  "temperatureMin": "number",
+  "temperatureMax": "number",
+  "humiditeMin": "number",
+  "humiditeMax": "number"
+}
+```
+
+### GET /api/pays/:id/exploitations
+**Description**: Liste des exploitations du pays avec statistiques
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+[
+  {
+    "idExploitation": "string",
+    "idPays": "string",
+    "nom": "string",
+    "nbEntrepots": "number",
+    "nbLots": "number",
+    "statutGlobal": "string"
+  }
+]
+```
+
+### GET /api/pays/:id/mesures/history
+**Description**: Historique température moyenne des 7 derniers jours
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+[
+  {
+    "date": "string (YYYY-MM-DD)",
+    "avgTemp": "number (nullable)"
+  }
+]
+```
+
+### POST /api/pays
+**Description**: Créer un nouveau pays
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Request Body**:
+```json
+{
+  "nom": "string",
+  "temperatureMin": "number",
+  "temperatureMax": "number",
+  "humiditeMin": "number",
+  "humiditeMax": "number"
+}
+```
+
+### PUT /api/pays/:id
+**Description**: Modifier un pays
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Request Body**: Même schéma que POST
+
+### DELETE /api/pays/:id
+**Description**: Supprimer un pays
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+{
+  "success": true
+}
+```
+
+---
+
+## Endpoints Exploitations
+
+### GET /api/exploitations
+**Description**: Liste de toutes les exploitations avec nom du pays
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+[
+  {
+    "idExploitation": "string",
+    "idPays": "string",
+    "nom": "string",
+    "nomPays": "string"
+  }
+]
+```
+
+### GET /api/exploitation/:id
+**Description**: Récupère les infos d'une exploitation avec pays associé
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+{
+  "idExploitation": "string",
+  "idPays": "string",
+  "nom": "string",
+  "pays": {
+    "idPays": "string",
+    "nom": "string"
+  }
+}
+```
+
+### GET /api/exploitation/:id/entrepots
+**Description**: Liste des entrepôts avec statistiques
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+[
+  {
+    "idEntrepot": "string",
+    "idExploitation": "string",
+    "nom": "string",
+    "adresse": "string",
+    "limiteQte": "number",
+    "nbLots": "number",
+    "statutConditions": "string",
+    "derniereMesure": {
+      "idMesure": "string",
+      "temperature": "number",
+      "humidite": "number",
+      "datMesure": "string"
+    }
+  }
+]
+```
+
+### GET /api/exploitation/:id/utilisateurs
+**Description**: Liste des utilisateurs rattachés
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+[
+  {
+    "idUtilisateur": "string",
+    "idExploitation": "string",
+    "nom": "string",
+    "prenom": "string",
+    "mail": "string"
+  }
+]
+```
+
+### POST /api/exploitations
+**Description**: Créer une nouvelle exploitation
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Request Body**:
+```json
+{
+  "nom": "string",
+  "idPays": "string"
+}
+```
+
+### PUT /api/exploitations/:id
+**Description**: Modifier une exploitation
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Request Body**: Même schéma que POST
+
+### DELETE /api/exploitations/:id
+**Description**: Supprimer une exploitation
+
+**Headers**: `Authorization: Bearer <token>`
+
+---
+
+## Endpoints Entrepôts
+
+### GET /api/entrepots
+**Description**: Liste de tous les entrepôts avec exploitation et pays
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+[
+  {
+    "idEntrepot": "string",
+    "idExploitation": "string",
+    "nom": "string",
+    "adresse": "string",
+    "limiteQte": "number",
+    "nomExploitation": "string",
+    "nomPays": "string"
+  }
+]
+```
+
+### GET /api/entrepot/:id
+**Description**: Récupère les infos de l'entrepôt avec exploitation et pays
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+{
+  "idEntrepot": "string",
+  "idExploitation": "string",
+  "nom": "string",
+  "adresse": "string",
+  "limiteQte": "number",
+  "exploitation": {
+    "idExploitation": "string",
+    "nom": "string"
+  },
+  "pays": {
+    "idPays": "string",
+    "nom": "string",
+    "temperatureMin": "number",
+    "temperatureMax": "number",
+    "humiditeMin": "number",
+    "humiditeMax": "number"
+  }
+}
+```
+
+### GET /api/entrepot/:id/mesures?periode=Xj
+**Description**: Récupère les mesures température/humidité sur la période
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Query Parameters**:
+- `periode`: nombre de jours (défaut: 30)
+
+**Response (200)**:
+```json
+[
+  {
+    "idMesure": "string",
+    "idEntrepot": "string",
+    "temperature": "number",
+    "humidite": "number",
+    "datMesure": "string (ISO 8601)"
+  }
+]
+```
+
+### GET /api/entrepot/:id/lots
+**Description**: Liste des lots stockés triés par datSto croissante (FIFO)
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+[
+  {
+    "idLotGrains": "string",
+    "idEntrepot": "string",
+    "datSto": "string (ISO 8601)",
+    "statut": "string",
+    "datSortie": "string (ISO 8601, nullable)"
+  }
+]
+```
+
+### POST /api/entrepot/:id/lots
+**Description**: Créer un nouveau lot dans cet entrepôt
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Request Body**:
+```json
+{
+  "datSto": "string (ISO 8601)"
+}
+```
+
+### POST /api/entrepots
+**Description**: Créer un nouvel entrepôt
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Request Body**:
+```json
+{
+  "nom": "string",
+  "adresse": "string",
+  "limiteQte": "number",
+  "idExploitation": "string"
+}
+```
+
+### PUT /api/entrepots/:id
+**Description**: Modifier un entrepôt
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Request Body**: Même schéma que POST
+
+### DELETE /api/entrepots/:id
+**Description**: Supprimer un entrepôt
+
+**Headers**: `Authorization: Bearer <token>`
+
+---
+
+## Endpoints Lots
+
+### GET /api/lots/:id
+**Description**: Récupère les infos du lot avec entrepôt, exploitation et pays
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+{
+  "idLotGrains": "string",
+  "idEntrepot": "string",
+  "datSto": "string (ISO 8601)",
+  "statut": "string",
+  "datSortie": "string (ISO 8601, nullable)",
+  "entrepot": {
+    "idEntrepot": "string",
+    "nom": "string"
+  },
+  "exploitation": {
+    "idExploitation": "string",
+    "nom": "string"
+  },
+  "pays": {
+    "idPays": "string",
+    "nom": "string",
+    "temperatureMin": "number",
+    "temperatureMax": "number",
+    "humiditeMin": "number",
+    "humiditeMax": "number"
+  }
+}
+```
+
+### GET /api/entrepot/:idEntrepot/mesures?from=datSto
+**Description**: Mesures température/humidité depuis la date de stockage du lot
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Query Parameters**:
+- `from`: date ISO 8601
+
+**Response (200)**: Même format que GET /api/entrepot/:id/mesures
+
+### GET /api/lots/:id/alertes
+**Description**: Historique des alertes liées à ce lot
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response (200)**:
+```json
+[
+  {
+    "idAlerte": "string",
+    "type": "string",
+    "valeurMesuree": "number (nullable)",
+    "dateAlerte": "string (ISO 8601)",
+    "statut": "string"
+  }
+]
+```
+
+### PUT /api/lots/:id
+**Description**: Mettre à jour le lot (principalement pour datSortie)
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Request Body**:
+```json
+{
+  "datSortie": "string (ISO 8601, nullable)"
+}
+```
+
+---
+
+## Endpoints Alertes
+
+### GET /api/alertes
+**Description**: Récupère toutes les alertes avec filtres
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Query Parameters**:
+- `pays`: ID du pays (optionnel)
+- `type`: type d'alerte (optionnel)
+- `from`: date début (ISO 8601, optionnel)
+- `to`: date fin (ISO 8601, optionnel)
+
+**Response (200)**:
+```json
+[
+  {
+    "idAlerte": "string",
+    "idEntrepot": "string",
+    "type": "string",
+    "valeurMesuree": "number (nullable)",
+    "dateAlerte": "string (ISO 8601)",
+    "statut": "string",
+    "nomEntrepot": "string",
+    "nomExploitation": "string",
+    "nomPays": "string",
+    "idPays": "string"
+  }
+]
+```
+
+---
+
+## Gestion des Erreurs
+
+### Format Standard des Erreurs
+```json
+{
+  "error": "string (message d'erreur)",
+  "code": "string (code d'erreur optionnel)",
+  "details": "object (détails optionnels)"
+}
+```
+
+### Codes d'Erreur HTTP
+- `200`: Succès
+- `201`: Créé
+- `400`: Requête invalide
+- `401`: Non authentifié
+- `403`: Non autorisé
+- `404`: Ressource non trouvée
+- `422`: Erreur de validation
+- `500`: Erreur serveur
+
+### Messages d'Erreur Spécifiques
+- `"Identifiants invalides"` (401)
+- `"Token expiré"` (401)
+- `"Pays non trouvé"` (404)
+- `"Exploitation non trouvée"` (404)
+- `"Entrepôt non trouvé"` (404)
+- `"Lot non trouvé"` (404)
+- `"Capacité maximale atteinte"` (422)
+- `"Date de stockage invalide"` (422)
+
+---
+
+## Sécurité
+
+### Authentification via API Externe
+- **Validation**: Via API d'authentification dédiée
+- **Token**: JWT fourni par l'API externe
+- **Durée de vie**: Gérée par l'API externe
+
+### Headers Requis
+```
+Authorization: Bearer <jwt_token_from_auth_api>
+Content-Type: application/json
+```
+
+### Validation des Tokens
+- Chaque requête passe par `/api/auth/validate` en middleware
+- Communication avec l'API d'authentification pour validation
+- Cache des validations (5 minutes) pour optimiser les performances
+
+### Validation des Données
+- Validation des schémas côté serveur
+- Protection contre les injections SQL
+- Rate limiting: 100 requêtes/minute par token
+
+### Permissions
+- **Gestion via l'API externe**: Rôles et permissions définis dans l'API d'authentification
+- **Admin**: Accès complet à tous les endpoints
+- **Opérateur**: Lecture seule + CRUD sur les lots de son exploitation
+- **Lecture seule**: Uniquement les endpoints GET
+
+---
+
+## Notes d'Implémentation
+
+### Calculs Automatiques
+1. **Statut des lots**:
+   - `périmé` si age > 365 jours
+   - `en alerte` si conditions hors seuils
+   - `conforme` sinon
+
+2. **Statut global exploitation**:
+   - `périmé` si un lot périmé
+   - `en alerte` si un lot en alerte
+   - `conforme` sinon
+
+3. **Alertes automatiques**:
+   - Générées lors de la création des mesures
+   - Lots périmés vérifiés quotidiennement
+
+### Performance
+- Indexation sur les clés étrangères
+- Pagination pour les listes importantes
+- Cache Redis pour les données fréquemment accédées
+
+### Base de Données
+- **Recommandé**: PostgreSQL avec UUID
+- **Alternative**: MongoDB
+- **Relations**: Pays -> Exploitation -> Entrepôt -> Lot
+
+---
+
+## Exemples de Requêtes
+
+### Créer un pays
+```bash
+curl -X POST https://api.futurekawa.com/api/pays \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nom": "Brésil",
+    "temperatureMin": 18,
+    "temperatureMax": 25,
+    "humiditeMin": 60,
+    "humiditeMax": 70
+  }'
+```
+
+### Validation de Token (pour test)
+```bash
+curl -X GET https://api.futurekawa.com/api/auth/validate \
+  -H "Authorization: Bearer <token_from_auth_api>"
+```
+
+### Récupérer le dashboard
+```bash
+curl -X GET https://api.futurekawa.com/api/dashboard/summary \
+  -H "Authorization: Bearer <token>"
+```
+
+---
+
+## Support
+
+Pour toute question sur l'implémentation de cette API, contacter l'équipe FutureKawa.
+**Contact**: tech@futurekawa.com
+**Documentation**: https://docs.futurekawa.com/api
+message.txt
+18 Ko

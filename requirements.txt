@@ -1,0 +1,24 @@
+# Framework web
+Flask==2.3.3
+Flask-CORS==4.0.0
+flask-swagger-ui==4.11.1
+
+# Base de données
+SQLAlchemy==2.0.21
+
+# Utils
+python-dotenv==1.0.0
+python-dateutil==2.8.2
+
+# Authentification et sécurité
+PyJWT==2.8.0
+werkzeug==2.3.7
+
+# Monitoring et logging
+gunicorn==21.2.0
+
+# Pour PostgreSQL (optionnel - à installer manuellement si besoin)
+# psycopg2-binary==2.9.7
+
+# Pour MySQL
+PyMySQL==1.1.0
