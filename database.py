@@ -9,16 +9,7 @@ DATABASE_URL = os.getenv(
     'sqlite:///futurekawa.db'  # Base SQLite par défaut pour le développement
 )
 
-# Configuration pour PostgreSQL (production)
-POSTGRES_CONFIG = {
-    'host': os.getenv('DB_HOST', 'localhost'),
-    'port': os.getenv('DB_PORT', '5432'),
-    'database': os.getenv('DB_NAME', 'futurekawa'),
-    'user': os.getenv('DB_USER', 'postgres'),
-    'password': os.getenv('DB_PASSWORD', 'password')
-}
-
-# Configuration pour MySQL (alternative)
+# Configuration pour MySQL
 MYSQL_CONFIG = {
     'host': os.getenv('DB_HOST', 'localhost'),
     'port': os.getenv('DB_PORT', '3306'),
@@ -33,9 +24,7 @@ def get_database_url():
     """
     db_type = os.getenv('DB_TYPE', 'sqlite').lower()
     
-    if db_type == 'postgresql':
-        return f"postgresql://{POSTGRES_CONFIG['user']}:{POSTGRES_CONFIG['password']}@{POSTGRES_CONFIG['host']}:{POSTGRES_CONFIG['port']}/{POSTGRES_CONFIG['database']}"
-    elif db_type == 'mysql':
+    if db_type == 'mysql':
         return f"mysql+pymysql://{MYSQL_CONFIG['user']}:{MYSQL_CONFIG['password']}@{MYSQL_CONFIG['host']}:{MYSQL_CONFIG['port']}/{MYSQL_CONFIG['database']}"
     else:
         # SQLite par défaut

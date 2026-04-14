@@ -17,8 +17,6 @@ werkzeug==2.3.7
 # Monitoring et logging
 gunicorn==21.2.0
 
-# Pour PostgreSQL (optionnel - à installer manuellement si besoin)
-# psycopg2-binary==2.9.7
 
 # Pour MySQL
 PyMySQL==1.1.0
