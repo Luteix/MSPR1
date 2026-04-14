@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func, and_, or_
-from models import Pays, Exploitation, Entrepot, LotGrains, Alerte, StatutLot
+from models import Pays, Exploitation, Entrepot, LotGrains, Mesure, Alerte, StatutLot
 from database import get_db, commit_session, rollback_session
 
 class DashboardService:

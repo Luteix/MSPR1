@@ -1,17 +1,7 @@
 """
 Modèles de données SQLAlchemy pour l'API FutureKawa
 
-Ce module définit les modèles de données pour la gestion des stocks de grains de café vert.
-Il utilise SQLAlchemy ORM pour mapper les classes Python aux tables de la base de données.
-
-Entités modélisées:
-- Pays: Pays d'origine avec conditions de stockage
-- Exploitation: Plantations de café
-- Utilisateur: Gestionnaires des exploitations
-- Entrepot: Lieux de stockage des grains
-- LotGrains: Lots de grains de café stockés
-- Mesure: Mesures de température/humidité
-- Alerte: Notifications d'anomalies
+Définit toutes les entités de la base de données.
 """
 
 from datetime import datetime
@@ -57,12 +47,7 @@ class StatutAlerte(Enum):
 # =============================================================================
 
 class Pays(Base):
-    """
-    Représente un pays d'origine du café avec ses conditions de stockage optimales
-    
-    Chaque pays définit les plages de température et d'humidité acceptables
-    pour le stockage des grains de café selon les normes locales.
-    """
+    """Modèle pour les pays producteurs de café"""
     __tablename__ = 'pays'
     
     # Clé primaire UUID pour l'unicité et la sécurité
@@ -72,21 +57,16 @@ class Pays(Base):
     nom = Column(String(100), nullable=False)
     
     # Conditions de stockage optimales pour ce pays
-    temperatureMin = Column(Float(1), nullable=False)  # Température minimale acceptable (°C)
-    temperatureMax = Column(Float(1), nullable=False)  # Température maximale acceptable (°C)
-    humiditeMin = Column(Float(1), nullable=False)     # Humidité relative minimale (%)
-    humiditeMax = Column(Float(1), nullable=False)     # Humidité relative maximale (%)
+    temperatureMin = Column(Float, nullable=False)  # Température minimale acceptable (°C)
+    temperatureMax = Column(Float, nullable=False)  # Température maximale acceptable (°C)
+    humiditeMin = Column(Float, nullable=False)     # Humidité relative minimale (%)
+    humiditeMax = Column(Float, nullable=False)     # Humidité relative maximale (%)
     
     # Relations avec les autres entités
     exploitations = relationship("Exploitation", back_populates="pays")  # Une-à-plusieurs
     
     def to_dict(self):
-        """
-        Convertit l'objet Pays en dictionnaire pour la sérialisation JSON
-        
-        Returns:
-            dict: Représentation JSON du pays
-        """
+        """Convertit le modèle en dictionnaire"""
         return {
             'idPays': self.idPays,
             'nom': self.nom,
