@@ -259,7 +259,7 @@ class LotGrains(Base):
     
     # Relations
     entrepot = relationship("Entrepot", back_populates="lots")      # Plusieurs-à-un
-    alertes = relationship("Alerte", back_populates="lot_grains")   # Une-à-plusieurs
+    alertes = relationship("Alerte", back_populates="lotgrains")   # Une-à-plusieurs
     
     def to_dict(self, include_hierarchy=False):
         """
@@ -357,7 +357,7 @@ class Alerte(Base):
     dépassent les seuils acceptables ou lorsqu'un lot approche
     de sa date de péremption.
     """
-    __tablename__ = 'alerte'
+    __tablename__ = 'alertes'
     
     # Clé primaire UUID
     idAlerte = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -376,7 +376,7 @@ class Alerte(Base):
     # Relations
     entrepot = relationship("Entrepot", back_populates="alertes")      # Plusieurs-à-un
     mesure = relationship("Mesure", back_populates="alertes")          # Plusieurs-à-un (optionnel)
-    lot_grains = relationship("LotGrains", back_populates="alertes")    # Plusieurs-à-un (optionnel)
+    lotgrains = relationship("LotGrains", back_populates="alertes")    # Plusieurs-à-un (optionnel)
     
     def to_dict(self, include_details=False):
         """
