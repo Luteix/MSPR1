@@ -1,4 +1,4 @@
-"""Contrôleur des entrepôts"""
+"""Contrôleur des entrepôts - Couche HTTP"""
 
 from flask import Blueprint, request, jsonify
 from services.entrepot_service import EntrepotService
@@ -6,43 +6,23 @@ from services.entrepot_service import EntrepotService
 entrepot_bp = Blueprint('entrepot', __name__, url_prefix='/api/entrepots')
 
 @entrepot_bp.route('', methods=['GET'])
-def get_all_entrepots():
-    """
-    Liste des entrepôts
-    ---
-    responses:
-      200:
-        description: OK
-        schema:
-          type: array
-    """
+def get_entrepots():
+    """Liste des entrepôts"""
     try:
         entrepots = EntrepotService.get_all_entrepots()
-        return jsonify(entrepots), 200
+        result = [entrepot.to_dict() for entrepot in entrepots]
+        return jsonify(result), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @entrepot_bp.route('/<string:entrepot_id>', methods=['GET'])
 def get_entrepot(entrepot_id):
-    """
-    Détails entrepôt
-    ---
-    parameters:
-      - name: entrepot_id
-        in: path
-        required: true
-        type: string
-    responses:
-      200:
-        description: OK
-        schema:
-          type: object
-    """
+    """Détails entrepôt"""
     try:
         entrepot = EntrepotService.get_entrepot_by_id(entrepot_id)
-        if not entrepot:
-            return jsonify({'error': 'Entrepôt non trouvé'}), 404
-        return jsonify(entrepot), 200
+        return jsonify(entrepot.to_dict(include_details=True)), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

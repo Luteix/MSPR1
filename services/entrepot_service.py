@@ -1,49 +1,29 @@
+"""Service pour les entrepôts - Couche Domaine"""
+
 from datetime import datetime, timedelta
+from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
-from sqlalchemy import func, and_, or_
-from models import Entrepot, Exploitation, Pays, LotGrains, Mesure, StatutLot
+from models import Entrepot, Exploitation, Mesure, LotGrains
 from database import get_db, commit_session, rollback_session
+from repositories.entrepot_repository import EntrepotRepository
 
 class EntrepotService:
+    """Logique métier pour les entrepôts"""
     
     @staticmethod
     def get_all_entrepots():
-        """
-        Récupère tous les entrepôts avec exploitation et pays
-        """
-        session = get_db()
-        try:
-            entrepots = session.query(Entrepot).options(
-                joinedload(Entrepot.exploitation).joinedload(Exploitation.pays)
-            ).all()
-            
-            return [ent.to_dict(include_details=True) for ent in entrepots]
-        except Exception as e:
-            rollback_session()
-            raise e
-        finally:
-            session.close()
+        """Récupère tous les entrepôts"""
+        return EntrepotRepository.get_all()
     
     @staticmethod
     def get_entrepot_by_id(entrepot_id):
         """
         Récupère un entrepôt par son ID avec exploitation et pays
         """
-        session = get_db()
-        try:
-            entrepot = session.query(Entrepot).options(
-                joinedload(Entrepot.exploitation).joinedload(Exploitation.pays)
-            ).filter(Entrepot.idEntrepot == entrepot_id).first()
-            
-            if not entrepot:
-                return None
-            
-            return entrepot.to_dict(include_details=True)
-        except Exception as e:
-            rollback_session()
-            raise e
-        finally:
-            session.close()
+        entrepot = EntrepotRepository.get_by_id(entrepot_id)
+        if not entrepot:
+            raise ValueError('Entrepot non trouvé')
+        return entrepot
     
     @staticmethod
     def get_mesures_by_entrepot(entrepot_id, periode=30):

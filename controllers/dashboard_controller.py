@@ -3,10 +3,10 @@ Contrôleur dashboard et alertes
 """
 
 from flask import Blueprint, request, jsonify
-from services.dashboard_service import DashboardService, AlerteService
+from services.dashboard_service import DashboardService
 
 dashboard_bp = Blueprint('dashboard', __name__, url_prefix='/api/dashboard')
-alerte_bp = Blueprint('alerte', __name__, url_prefix='/api/alertes')
+alerte_bp = Blueprint('alerte', __name__, url_prefix='/api')
 
 @dashboard_bp.route('/summary', methods=['GET'])
 def get_dashboard_summary():
@@ -25,7 +25,7 @@ def get_dashboard_summary():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@dashboard_bp.route('/alertes/recentes', methods=['GET'])
+@alerte_bp.route('/alertes/recentes', methods=['GET'])
 def get_recent_alertes():
     """
     Alertes récentes
@@ -48,74 +48,32 @@ def get_recent_alertes():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@alerte_bp.route('', methods=['GET'])
+@alerte_bp.route('/alertes', methods=['GET'])
 def get_all_alertes():
-    """
-    Toutes les alertes avec filtres
-    ---
-    parameters:
-      - name: pays_id
-        in: query
-        type: string
-      - name: type_alerte
-        in: query
-        type: string
-      - name: date_from
-        in: query
-        type: string
-      - name: date_to
-        in: query
-        type: string
-    responses:
-      200:
-        description: OK
-        schema:
-          type: array
-    """
+    """Liste des alertes"""
     try:
-        pays_id = request.args.get('pays')
-        type_alerte = request.args.get('type')
-        date_from = request.args.get('from')
-        date_to = request.args.get('to')
-        
-        alertes = AlerteService.get_all_alertes(pays_id, type_alerte, date_from, date_to)
+        alertes = DashboardService.get_all_alertes()
+        # Les alertes sont déjà des dictionnaires retournés par le service
         return jsonify(alertes), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@alerte_bp.route('', methods=['POST'])
+@alerte_bp.route('/alertes', methods=['POST'])
 def create_alerte():
-    """
-    Crée une nouvelle alerte
-    ---
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          required:
-            - idEntrepot
-            - type
-    responses:
-      201:
-        description: Created
-        schema:
-          type: object
-    """
+    """Crée une alerte"""
     try:
         data = request.get_json()
-        
-        # Validation des données requises
-        if 'idEntrepot' not in data or 'type' not in data:
-            return jsonify({'error': 'Champs requis: idEntrepot, type'}), 400
-        
-        alerte = AlerteService.create_alerte(data)
-        return jsonify(alerte), 201
+        alerte = DashboardService.create_alerte(data)
+        # Gérer le cas où alerte est déjà un dict ou un objet
+        if isinstance(alerte, dict):
+            return jsonify(alerte), 201
+        return jsonify(alerte.to_dict() if hasattr(alerte, 'to_dict') else alerte), 201
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@alerte_bp.route('/<string:alerte_id>', methods=['PUT'])
+@dashboard_bp.route('/alertes/<string:alerte_id>', methods=['PUT'])
 def update_alerte_statut(alerte_id):
     """
     Met à jour le statut d'une alerte

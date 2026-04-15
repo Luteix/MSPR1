@@ -47,20 +47,23 @@ class StatutAlerte(Enum):
 # =============================================================================
 
 class Pays(Base):
-    """Modèle pour les pays producteurs de café"""
+    """
+    Représente un pays où sont situées les exploitations
+    
+    Chaque pays définit des seuils de température et d'humidité
+    acceptables pour le stockage du café.
+    """
     __tablename__ = 'pays'
     
-    # Clé primaire UUID pour l'unicité et la sécurité
-    idPays = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    # Clé primaire (adaptée à la BDD : int(11))
+    idPays = Column(Integer, primary_key=True, autoincrement=True)
     
-    # Nom du pays (ex: 'Colombie', 'Éthiopie', 'Brésil')
-    nom = Column(String(100), nullable=False)
-    
-    # Conditions de stockage optimales pour ce pays
-    temperatureMin = Column(Float, nullable=False)  # Température minimale acceptable (°C)
-    temperatureMax = Column(Float, nullable=False)  # Température maximale acceptable (°C)
-    humiditeMin = Column(Float, nullable=False)     # Humidité relative minimale (%)
-    humiditeMax = Column(Float, nullable=False)     # Humidité relative maximale (%)
+    # Informations sur le pays
+    nom = Column(String(50), nullable=True)  # Nom du pays (nullable dans la BDD)
+    temperatureMin = Column(Float, nullable=True)      # Température minimale acceptable (°C) (nullable dans la BDD)
+    temperatureMax = Column(Float, nullable=True)      # Température maximale acceptable (°C) (nullable dans la BDD)
+    humiditeMin = Column(Float, nullable=True)         # Humidité minimale acceptable (%) (nullable dans la BDD)
+    humiditeMax = Column(Float, nullable=True)         # Humidité maximale acceptable (%) (nullable dans la BDD)
     
     # Relations avec les autres entités
     exploitations = relationship("Exploitation", back_populates="pays")  # Une-à-plusieurs
@@ -82,21 +85,21 @@ class Pays(Base):
 
 class Exploitation(Base):
     """
-    Représente une plantation ou une exploitation agricole de café
+    Représente une exploitation agricole
     
-    Une exploitation est rattachée à un pays et peut gérer plusieurs
-    entrepôts et utilisateurs.
+    Une exploitation est rattachée à un pays et peut gérer
+    plusieurs entrepôts de stockage.
     """
     __tablename__ = 'exploitation'
     
-    # Clé primaire UUID
-    idExploitation = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    # Clé primaire (adaptée à la BDD : int(11))
+    idExploitation = Column(Integer, primary_key=True, autoincrement=True)
     
-    # Clé étrangère vers le pays d'origine
-    idPays = Column(String(36), ForeignKey('pays.idPays'), nullable=False)
+    # Clé étrangère vers le pays (adaptée à la BDD : int(11))
+    idPays = Column(Integer, ForeignKey('pays.idPays'), nullable=False)
     
-    # Nom de l'exploitation (ex: 'Finca La Esperanza', 'Kilimanjaro Plantation')
-    nom = Column(String(150), nullable=False)
+    # Informations sur l'exploitation
+    nom = Column(String(150), nullable=False)  # Nom de l'exploitation
     
     # Relations avec les autres entités
     pays = relationship("Pays", back_populates="exploitations")      # Plusieurs-à-un
@@ -181,22 +184,22 @@ class Entrepot(Base):
     """
     __tablename__ = 'entrepot'
     
-    # Clé primaire UUID
-    idEntrepot = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    # Clé primaire (adaptée à la BDD : int(11))
+    idEntrepot = Column(Integer, primary_key=True, autoincrement=True)
     
-    # Clé étrangère vers l'exploitation
-    idExploitation = Column(String(36), ForeignKey('exploitation.idExploitation'), nullable=False)
+    # Clé étrangère vers l'exploitation (adaptée à la BDD : int(11))
+    idExploitation = Column(Integer, ForeignKey('exploitation.idExploitation'), nullable=False)
     
     # Informations sur l'entrepôt
-    nom = Column(String(100), nullable=False)           # Nom de l'entrepôt
-    adresse = Column(String(255), nullable=False)       # Adresse complète
-    limiteQte = Column(Integer, nullable=False)         # Capacité maximale (kg)
+    nom = Column(String(50), nullable=True)           # Nom de l'entrepôt (nullable dans la BDD)
+    adresse = Column(String(100), nullable=True)       # Adresse complète (nullable dans la BDD)
+    limiteQte = Column(Integer, nullable=True)         # Capacité maximale (kg) (nullable dans la BDD)
     
     # Relations avec les autres entités
     exploitation = relationship("Exploitation", back_populates="entrepots")  # Plusieurs-à-un
     lots = relationship("LotGrains", back_populates="entrepot")           # Une-à-plusieurs
     mesures = relationship("Mesure", back_populates="entrepot")             # Une-à-plusieurs
-    alertes = relationship("Alerte", back_populates="entrepot")             # Une-à-plusieurs
+    # Note: relation alertes supprimée car la table alertes n'a pas de clé étrangère idEntrepot
     
     def to_dict(self, include_details=False):
         """
@@ -246,20 +249,20 @@ class LotGrains(Base):
     """
     __tablename__ = 'lotgrains'
     
-    # Clé primaire UUID
-    idLotGrains = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    # Clé primaire (adaptée à la BDD : int(11))
+    idLotGrains = Column(Integer, primary_key=True, autoincrement=True)
     
-    # Clé étrangère vers l'entrepôt de stockage
-    idEntrepot = Column(String(36), ForeignKey('entrepot.idEntrepot'), nullable=False)
+    # Clé étrangère vers l'entrepôt de stockage (adaptée à la BDD : int(11))
+    idEntrepot = Column(Integer, ForeignKey('entrepot.idEntrepot'), nullable=True)
     
     # Informations sur le lot
-    datSto = Column(DateTime, nullable=False, default=datetime.utcnow)  # Date d'entrée en stock
-    statut = Column(SQLEnum(StatutLot), nullable=False, default=StatutLot.CONFORME)  # Statut actuel
-    datSortie = Column(DateTime, nullable=True)  # Date de sortie du stock (si applicable)
+    datSto = Column(DateTime, nullable=True)  # Date d'entrée en stock (nullable dans la BDD)
+    statut = Column(String(10), nullable=True)  # Statut actuel (nullable dans la BDD)
+    datSortie = Column(DateTime, nullable=True)  # Date de sortie du stock (nullable dans la BDD)
     
     # Relations
     entrepot = relationship("Entrepot", back_populates="lots")      # Plusieurs-à-un
-    alertes = relationship("Alerte", back_populates="lotgrains")   # Une-à-plusieurs
+    # Note: relation alertes supprimée car la table alertes n'a pas de clé étrangère idLotGrains
     
     def to_dict(self, include_hierarchy=False):
         """
@@ -308,26 +311,26 @@ class LotGrains(Base):
 
 class Mesure(Base):
     """
-    Représente une mesure environnementale dans un entrepôt
+    Représente une mesure de température et d'humidité
     
-    Les mesures sont prises régulièrement par des capteurs pour surveiller
-    les conditions de stockage (température et humidité).
+    Les mesures sont prises régulièrement dans les entrepôts
+    pour surveiller les conditions de stockage.
     """
     __tablename__ = 'mesures'
     
-    # Clé primaire UUID
-    idMesure = Column(Integer, primary_key=True, autoincrement=True)    
-    # Clé étrangère vers l'entrepôt où la mesure a été prise
-    idEntrepot = Column(String(36), ForeignKey('entrepot.idEntrepot'), nullable=False)
+    # Clé primaire
+    idMesure = Column(Integer, primary_key=True, autoincrement=True)
+    
+    # Clé étrangère vers l'entrepôt où la mesure a été prise (adaptée à la BDD : int(11))
+    idEntrepot = Column(Integer, ForeignKey('entrepot.idEntrepot'), nullable=False)
     
     # Données de la mesure
-    temperature = Column(Float(1), nullable=False)  # Température en °C (1 décimale)
-    humidite = Column(Float(1), nullable=False)    # Humidité relative en % (1 décimale)
-    datMesure = Column(DateTime, nullable=False, default=datetime.utcnow)  # Date/heure de la mesure
+    temperature = Column(Float, nullable=True)  # Température en °C (nullable dans la BDD)
+    humidite = Column(Float, nullable=True)    # Humidité relative en % (nullable dans la BDD)
+    datMesure = Column(DateTime, nullable=True)  # Date/heure de la mesure (nullable dans la BDD)
     
     # Relations
     entrepot = relationship("Entrepot", back_populates="mesures")  # Plusieurs-à-un
-    alertes = relationship("Alerte", back_populates="mesure")       # Une-à-plusieurs
     
     def to_dict(self):
         """
@@ -358,52 +361,15 @@ class Alerte(Base):
     """
     __tablename__ = 'alertes'
     
-    # Clé primaire UUID
-    idAlerte = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    # Clé primaire (adaptée à la BDD : INT AUTO_INCREMENT)
+    idAlerte = Column(Integer, primary_key=True, autoincrement=True)
     
-    # Clés étrangères (optionnelles selon le type d'alerte)
-    idMesure = Column(Integer, ForeignKey('mesures.idMesure'), nullable=True)           # Pour alertes environnementales
-    idLotGrains = Column(String(36), ForeignKey('lotgrains.idLotGrains'), nullable=True)  # Pour alertes sur lots
-    idEntrepot = Column(String(36), ForeignKey('entrepot.idEntrepot'), nullable=False)  # Entrepôt concerné
+    # Clé étrangère vers la mesure (seule colonne existante dans la BDD)
+    idMesure = Column(Integer, ForeignKey('mesures.idMesure'), nullable=False, unique=True)
     
-    # Informations sur l'alerte
-    type = Column(SQLEnum(TypeAlerte), nullable=False)               # Type de l'alerte
-    valeurMesuree = Column(Float, nullable=True)                      # Valeur qui a déclenché l'alerte
-    dateAlerte = Column(DateTime, nullable=False, default=datetime.utcnow)  # Date/heure de création
-    statut = Column(SQLEnum(StatutAlerte), nullable=False, default=StatutAlerte.EN_COURS)  # Statut de traitement
-    
-    # Relations
-    entrepot = relationship("Entrepot", back_populates="alertes")      # Plusieurs-à-un
-    mesure = relationship("Mesure", back_populates="alertes")          # Plusieurs-à-un (optionnel)
-    lotgrains = relationship("LotGrains", back_populates="alertes")    # Plusieurs-à-un (optionnel)
-    
-    def to_dict(self, include_details=False):
-        """
-        Convertit l'objet Alerte en dictionnaire
-        
-        Args:
-            include_details (bool): Si True, inclut les détails hiérarchiques
-            
-        Returns:
-            dict: Représentation JSON de l'alerte
-        """
-        result = {
+    def to_dict(self):
+        """Convertit l'objet Alerte en dictionnaire"""
+        return {
             'idAlerte': self.idAlerte,
-            'idEntrepot': self.idEntrepot,
-            'type': self.type.value if self.type else None,
-            'valeurMesuree': self.valeurMesuree,
-            'dateAlerte': self.dateAlerte.isoformat() if self.dateAlerte else None,
-            'statut': self.statut.value if self.statut else None
+            'idMesure': self.idMesure
         }
-        
-        if include_details and self.entrepot:
-            # Ajout des détails hiérarchiques si demandé
-            result['nomEntrepot'] = self.entrepot.nom
-            if self.entrepot.exploitation:
-                result['nomExploitation'] = self.entrepot.exploitation.nom
-                result['idExploitation'] = self.entrepot.exploitation.idExploitation
-                if self.entrepot.exploitation.pays:
-                    result['nomPays'] = self.entrepot.exploitation.pays.nom
-                    result['idPays'] = self.entrepot.exploitation.pays.idPays
-                    
-        return result
