@@ -1,4 +1,4 @@
-# FutureKawa API
+# Futurekawa API
 
 API de gestion des stocks de grains de café vert en architecture 3 couches avec documentation Swagger.
 

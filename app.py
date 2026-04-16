@@ -51,7 +51,7 @@ def create_app():
                 "route": '/apispec_1.json',
                 "rule_filter": lambda rule: True,
                 "model_filter": lambda tag: True,
-                "title": "API FutureKawa",
+                "title": "API Futurekawa",
                 "description": "API REST pour la gestion de la chaîne d'approvisionnement du café",
                 "version": "1.0.0"
             }
@@ -112,13 +112,13 @@ def create_app():
     # Route de santé
     @app.route('/health', methods=['GET'])
     def health_check():
-        return jsonify({'status': 'healthy', 'service': 'FutureKawa API'})
+        return jsonify({'status': 'healthy', 'service': 'Futurekawa API'})
     
     return app
 
 if __name__ == '__main__':
     """Point d'entrée principal de l'application"""
-    print("Initialisation de l'API FutureKawa...")
+    print("Initialisation de l'API Futurekawa...")
     
     # Test de connexion à la base de données
     if test_connection():

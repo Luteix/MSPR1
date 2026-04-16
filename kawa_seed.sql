@@ -1,4 +1,4 @@
-USE futureKawa;
+USE futurekawa;
 
 -- 1. Insertion des PAYS (3 pays imposés)
 INSERT INTO Pays (idPays, nom, temperatureMin, temperatureMax, humiditeMin, humiditeMax) VALUES
