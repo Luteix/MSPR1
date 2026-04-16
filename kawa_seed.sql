@@ -7,13 +7,13 @@ INSERT INTO Pays (idPays, nom, temperatureMin, temperatureMax, humiditeMin, humi
 (3, 'Équateur', 12.00, 25.00, 50.00, 80.00);
 
 -- 2. Insertion des EXPLOITATIONS (6 par pays approx.)
-INSERT INTO Exploitation (idExploitation, nom, idPays) VALUES
+INSERT INTO Exploitations (idExploitation, nom, idPays) VALUES
 (1, 'Fazenda Santa Maria', 1), (2, 'Rancho Rio Doce', 1), (3, 'Serra do Cafe', 1), (4, 'Ouro Verde', 1), (5, 'Bahia Coffee', 1), (6, 'Minas Garden', 1),
 (7, 'Finca La Esperanza', 2), (8, 'El Mirador', 2), (9, 'Cafetal Medellin', 2), (10, 'Sierra Nevada', 2), (11, 'Huila Heights', 2), (12, 'Andes Aroma', 2),
 (13, 'Amazonia Viva', 3), (14, 'Volcan Pichincha', 3), (15, 'Mitad del Mundo', 3), (16, 'Galapagos Beans', 3), (17, 'Quito Roast', 3), (18, 'Sol de Ecuador', 3);
 
 -- 3. Insertion des ENTREPOTS (1 à 2 par exploitation)
-INSERT INTO Entrepot (idEntrepot, nom, adresse, limiteQte, idExploitation) VALUES
+INSERT INTO Entrepots (idEntrepot, nom, adresse, limiteQte, idExploitation) VALUES
 (1, 'Hangar A1', 'Rua 10, Santos', 5000, 1), (2, 'Silo Central', 'Rua 15, Santos', 10000, 1),
 (3, 'Stock Sud', 'Av. Brasil, Vitoria', 3000, 2), (4, 'Nord Storage', 'Av. Brasil, Vitoria', 3000, 2),
 (5, 'Warehouse Alpha', 'Calle 5, Bogota', 4500, 7), (6, 'Silo Principal', 'Calle 8, Bogota', 8000, 7),
@@ -25,7 +25,7 @@ INSERT INTO Entrepot (idEntrepot, nom, adresse, limiteQte, idExploitation) VALUE
 (20, 'Stock 20', 'Lieu-dit 10', 2500, 17);
 
 -- 4. Insertion des UTILISATEURS (Mélange de rôles et d'exploitations)
-INSERT INTO Utilisateur (idUtilisateur, nom, prenom, mail, mdp, idExploitation, idPoste) VALUES
+INSERT INTO Utilisateurs (idUtilisateur, nom, prenom, mail, mdp, idExploitation, idPoste) VALUES
 (1, 'Dupont', 'Jean', 'jean@kawa.com', 'hash123', 1, 2),
 (2, 'Silva', 'Maria', 'maria@kawa.com', 'hash123', 1, 1),
 (3, 'Garcia', 'Carlos', 'carlos@kawa.com', 'hash123', 7, 2),
