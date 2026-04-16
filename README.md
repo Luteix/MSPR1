@@ -275,4 +275,4 @@ Pour toute question sur l'implémentation de cette API :
 
 ## Licence
 
-© 2024 FutureKawa - Tous droits réservés
+© 2024 FutureKawa - Tous droits réservés.

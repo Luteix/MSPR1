@@ -17,6 +17,7 @@ from controllers.entrepot_controller import entrepot_bp
 from controllers.lot_controller import lot_bp
 from controllers.dashboard_controller import dashboard_bp, alerte_bp
 from controllers.mesure_controller import mesure_bp
+from controllers.auth_controller import auth_bp  # Blueprint d'authentification
 
 def create_app():
     """Factory function pour créer et configurer l'application Flask"""
@@ -63,12 +64,19 @@ def create_app():
     app.register_blueprint(mesure_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(alerte_bp)
+    app.register_blueprint(auth_bp)  # Routes d'authentification (/api/login, /api/register)
     
     # Middleware d'authentification
     @app.before_request
     def validate_token():
         # Routes publiques qui ne nécessitent pas d'authentification
-        public_routes = ['/docs', '/static/swagger.json', '/api/auth/validate']
+        public_routes = [
+            '/docs', 
+            '/static/swagger.json', 
+            '/api/verify',
+            '/api/login',      # Connexion - doit être publique
+            '/api/register'    # Inscription - doit être publique
+        ]
         
         if request.path in public_routes:
             return None

@@ -151,6 +151,10 @@ class Utilisateur(Base):
     nom = Column(String(50), nullable=False)       # Nom de famille
     prenom = Column(String(50), nullable=False)   # Prénom
     mail = Column(String(255), nullable=False, unique=True)  # Email unique
+    mdp = Column(String(255), nullable=False)    # Mot de passe (hashé ou en clair)
+    
+    # Clés étrangères
+    idPoste = Column(Integer, ForeignKey('poste.idPoste'), nullable=True)
     
     # Relations
     exploitation = relationship("Exploitation", back_populates="utilisateurs")  # Plusieurs-à-un
@@ -278,8 +282,7 @@ class LotGrains(Base):
             'idLotGrains': self.idLotGrains,
             'idEntrepot': self.idEntrepot,
             'datSto': self.datSto.isoformat() if self.datSto else None,
-            'statut': self.statut.value if self.statut else None,
-            'datSortie': self.datSortie.isoformat() if self.datSortie else None
+            'statut': self.statut,            'datSortie': self.datSortie.isoformat() if self.datSortie else None
         }
         
         if include_hierarchy and self.entrepot:

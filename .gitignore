@@ -27,3 +27,13 @@ env/
 # Fichiers système
 .DS_Store
 Thumbs.db
+
+# Clés et secrets JWT (NE JAMAIS COMMITTER)
+config.py
+jwt_secret.key
+*.pem
+secrets.json
+
+# Fichiers de test locale
+test_local.py
+data_test/
