@@ -1,3 +1,4 @@
+CREATE DATABASE futurekawa;
 USE futureKawa;
 
 CREATE TABLE Pays(
