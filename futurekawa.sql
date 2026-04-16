@@ -1,5 +1,5 @@
 CREATE DATABASE futurekawa;
-USE futureKawa;
+USE futurekawa;
 
 CREATE TABLE Pays(
     idPays INT AUTO_INCREMENT,
@@ -11,7 +11,7 @@ CREATE TABLE Pays(
     PRIMARY KEY(idPays)
 );
 
-CREATE TABLE Exploitation(
+CREATE TABLE Exploitations(
     idExploitation INT AUTO_INCREMENT,
     nom VARCHAR(50),
     idPays INT NOT NULL,
@@ -19,14 +19,14 @@ CREATE TABLE Exploitation(
     FOREIGN KEY(idPays) REFERENCES Pays(idPays)
 );
 
-CREATE TABLE Entrepot(
+CREATE TABLE Entrepots(
     idEntrepot INT AUTO_INCREMENT,
     nom VARCHAR(50),
     adresse VARCHAR(100),
     limiteQte INT,
     idExploitation INT NOT NULL,
     PRIMARY KEY(idEntrepot),
-    FOREIGN KEY(idExploitation) REFERENCES Exploitation(idExploitation)
+    FOREIGN KEY(idExploitation) REFERENCES Exploitations(idExploitation)
 );
 
 CREATE TABLE LotGrains(
@@ -36,7 +36,7 @@ CREATE TABLE LotGrains(
     datSortie DATE,
     idEntrepot INT,
     PRIMARY KEY(idLotGrains),
-    FOREIGN KEY(idEntrepot) REFERENCES Entrepot(idEntrepot)
+    FOREIGN KEY(idEntrepot) REFERENCES Entrepots(idEntrepot)
 );
 
 CREATE TABLE Mesures(
@@ -46,7 +46,7 @@ CREATE TABLE Mesures(
     datMesure DATETIME,
     idEntrepot INT NOT NULL,
     PRIMARY KEY(idMesure),
-    FOREIGN KEY(idEntrepot) REFERENCES Entrepot(idEntrepot)
+    FOREIGN KEY(idEntrepot) REFERENCES Entrepots(idEntrepot)
 );
 
 CREATE TABLE Alertes(
@@ -57,13 +57,13 @@ CREATE TABLE Alertes(
     FOREIGN KEY(idMesure) REFERENCES Mesures(idMesure)
 );
 
-CREATE TABLE Poste(
+CREATE TABLE Postes(
     idPoste INT AUTO_INCREMENT,
     intitule VARCHAR(100),
     PRIMARY KEY(idPoste)
 );
 
-CREATE TABLE Utilisateur(
+CREATE TABLE Utilisateurs(
     idUtilisateur INT AUTO_INCREMENT,
     nom VARCHAR(50),
     prenom VARCHAR(50),
@@ -72,10 +72,10 @@ CREATE TABLE Utilisateur(
     idExploitation INT NOT NULL,
     idPoste INT NOT NULL DEFAULT 1,
     PRIMARY KEY(idUtilisateur),
-    FOREIGN KEY(idExploitation) REFERENCES Exploitation(idExploitation),
-    FOREIGN KEY(idPoste) REFERENCES Poste(idPoste)
+    FOREIGN KEY(idExploitation) REFERENCES Exploitations(idExploitation),
+    FOREIGN KEY(idPoste) REFERENCES Postes(idPoste)
 );
 
-INSERT INTO Poste (intitule) VALUES
+INSERT INTO Postes (intitule) VALUES
 ('EmployÃ©'),
 ('Responsable exploitation');
