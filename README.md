@@ -44,31 +44,25 @@ L'API est structurée en 3 couches :
    source venv/bin/activate
    ```
 
-3. **Installer les dépendances**
+3. **Installation automatique (config + BDD)**
    ```bash
    pip install -r requirements.txt
-   ```
-
-4. **Configurer l'application (création de config.py)**
-   ```bash
    python setup.py
    ```
-   Ce script crée automatiquement `config.py` avec une clé JWT unique.
-   
-5. **Configurer les variables d'environnement**
-   ```bash
-   # Créer un fichier .env
-   cp .env.example .env
-   
-   # Éditer .env avec votre configuration
-   ```
+   Le script `setup.py` s'occupe de tout :
+   - Crée `config.py` avec une clé JWT unique
+   - Crée `.env` avec les paramètres BDD par défaut
+   - Vérifie les dépendances
+   - Propose d'initialiser la base de données (futurekawa.sql + kawa_seed.sql)
 
-6. **Initialiser la base de données**
-   ```bash
-   python database.py
+4. **Configurer la base de données (si pas fait par setup.py)**
+   Éditer `.env` avec votre vrai mot de passe MySQL :
    ```
+   DB_PASSWORD=votre_vrai_mot_de_passe
+   ```
+   Puis relancer `python setup.py` pour initialiser la BDD.
 
-7. **Démarrer l'application**
+5. **Démarrer l'application**
    ```bash
    python app.py
    ```
