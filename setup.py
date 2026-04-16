@@ -130,7 +130,7 @@ FLASK_DEBUG=True
 def setup_database():
     """
     Initialise la base de données avec les scripts SQL.
-    Exécute futurekawa.sql (structure) puis kawa_seed.sql (données).
+    Demande interactivement le mot de passe MySQL si non configuré.
     """
     print("\n=== BASE DE DONNÉES ===")
     
@@ -151,80 +151,174 @@ def setup_database():
         print("[ERREUR] python-dotenv non installé")
         return False
     
-    # Récupère les paramètres BDD
+    # Paramètres BDD par défaut
     db_host = os.getenv('DB_HOST', 'localhost')
     db_port = os.getenv('DB_PORT', '3306')
     db_name = os.getenv('DB_NAME', 'futurekawa')
     db_user = os.getenv('DB_USER', 'root')
     db_password = os.getenv('DB_PASSWORD', '')
     
+    # Si pas de MDP configuré, demande interactivement
     if not db_password or db_password == 'votre_mot_de_passe':
-        print("[INFO] Mot de passe BDD non configuré dans .env")
-        print("   Modifiez DB_PASSWORD dans le fichier .env puis relancez setup.py")
-        return True
+        print("[INFO] Configuration de la connexion MySQL requise")
+        print("\nLes paramètres par défaut sont:")
+        print(f"  - Hôte: {db_host}")
+        print(f"  - Port: {db_port}")
+        print(f"  - Utilisateur: {db_user}")
+        print(f"  - Base: {db_name}")
+        
+        db_password = input("\nMot de passe MySQL (root): ").strip()
+        
+        if not db_password:
+            print("[ERREUR] Mot de passe requis")
+            return False
+        
+        # Sauvegarde dans .env
+        save_password_to_env(db_password)
     
-    print(f"[INFO] Connexion à MySQL ({db_host}:{db_port})...")
+    print(f"\n[INFO] Connexion à MySQL ({db_host}:{db_port})...")
     
     try:
         import pymysql
         
-        # Teste la connexion
+        # Connexion SANS base pour créer la base si besoin
         conn = pymysql.connect(
             host=db_host,
             port=int(db_port),
             user=db_user,
             password=db_password
         )
+        cursor = conn.cursor()
+        
+        # Vérifie si la base existe déjà
+        cursor.execute("SHOW DATABASES LIKE %s", (db_name,))
+        db_exists = cursor.fetchone()
+        
+        if db_exists:
+            print(f"[OK] Base de données '{db_name}' existe déjà")
+            
+            # Vérifie si des tables existent
+            cursor.execute(f"USE {db_name}")
+            cursor.execute("SHOW TABLES")
+            tables = cursor.fetchall()
+            
+            if tables:
+                print(f"[INFO] {len(tables)} tables trouvées")
+                response = input("\nRéinitialiser la base de données? (oui/non): ").lower().strip()
+                if response not in ['oui', 'yes', 'o', 'y']:
+                    print("[INFO] Conservation de la base existante")
+                    conn.close()
+                    return True
+        else:
+            print(f"[INFO] Création de la base '{db_name}'...")
+            cursor.execute(f"CREATE DATABASE {db_name}")
+            print(f"[OK] Base '{db_name}' créée")
+        
         conn.close()
-        print("[OK] Connexion MySQL réussie")
         
     except Exception as e:
         print(f"[ERREUR] Connexion MySQL échouée: {e}")
-        print("   Vérifiez vos paramètres dans .env")
+        print("   Vérifiez que MySQL est démarré et accessible")
         return False
     
-    # Demande confirmation avant d'exécuter les scripts SQL
-    print("\n[QUESTION] Voulez-vous initialiser la base de données?")
-    print("   Cela exécutera:")
-    print("   1. futurekawa.sql (création des tables)")
-    print("   2. kawa_seed.sql (insertion des données)")
-    
-    response = input("\nContinuer? (oui/non): ").lower().strip()
-    
-    if response not in ['oui', 'yes', 'o', 'y']:
-        print("[INFO] Initialisation BDD ignorée")
-        return True
-    
+    # Exécute les scripts SQL
     try:
-        # Exécute futurekawa.sql
-        print("\n[INFO] Exécution de futurekawa.sql...")
-        cmd1 = f'mysql -h {db_host} -P {db_port} -u {db_user} -p{db_password} < futurekawa.sql'
+        # futurekawa.sql
+        print("\n[INFO] Exécution de futurekawa.sql (structure)...")
+        cmd1 = f'mysql -h {db_host} -P {db_port} -u {db_user} -p"{db_password}" < futurekawa.sql'
         result1 = subprocess.run(cmd1, shell=True, capture_output=True, text=True)
+        
+        if result1.returncode != 0:
+            # Fallback: essayer sans les guillemets
+            cmd1_alt = f'mysql -h {db_host} -P {db_port} -u {db_user} -p{db_password} < futurekawa.sql'
+            result1 = subprocess.run(cmd1_alt, shell=True, capture_output=True, text=True)
         
         if result1.returncode != 0:
             print(f"[ERREUR] futurekawa.sql: {result1.stderr}")
             return False
         
-        print("[OK] futurekawa.sql exécuté avec succès")
+        print("[OK] Structure de la base créée")
         
-        # Exécute kawa_seed.sql
-        print("\n[INFO] Exécution de kawa_seed.sql...")
-        cmd2 = f'mysql -h {db_host} -P {db_port} -u {db_user} -p{db_password} {db_name} < kawa_seed.sql'
+        # kawa_seed.sql
+        print("\n[INFO] Exécution de kawa_seed.sql (données)...")
+        cmd2 = f'mysql -h {db_host} -P {db_port} -u {db_user} -p"{db_password}" {db_name} < kawa_seed.sql'
         result2 = subprocess.run(cmd2, shell=True, capture_output=True, text=True)
+        
+        if result2.returncode != 0:
+            cmd2_alt = f'mysql -h {db_host} -P {db_port} -u {db_user} -p{db_password} {db_name} < kawa_seed.sql'
+            result2 = subprocess.run(cmd2_alt, shell=True, capture_output=True, text=True)
         
         if result2.returncode != 0:
             print(f"[ERREUR] kawa_seed.sql: {result2.stderr}")
             return False
         
-        print("[OK] kawa_seed.sql exécuté avec succès")
-        print("[OK] Base de données initialisée avec les données de test!")
+        print("[OK] Données insérées")
+        print("[OK] Base de données prête!")
         
     except Exception as e:
         print(f"[ERREUR] Impossible d'exécuter les scripts SQL: {e}")
-        print("   Assurez-vous que MySQL est installé et accessible")
         return False
     
     return True
+
+def save_password_to_env(password):
+    """Sauvegarde le mot de passe dans le fichier .env"""
+    env_path = '.env'
+    
+    if os.path.exists(env_path):
+        with open(env_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+    else:
+        lines = [
+            "# Configuration de la base de données MySQL\n",
+            "DB_HOST=localhost\n",
+            "DB_PORT=3306\n",
+            "DB_NAME=futurekawa\n",
+            "DB_USER=root\n",
+            "FLASK_DEBUG=True\n"
+        ]
+    
+    # Remplace ou ajoute DB_PASSWORD
+    new_lines = []
+    password_set = False
+    
+    for line in lines:
+        if line.startswith('DB_PASSWORD='):
+            new_lines.append(f'DB_PASSWORD={password}\n')
+            password_set = True
+        else:
+            new_lines.append(line)
+    
+    if not password_set:
+        new_lines.append(f'DB_PASSWORD={password}\n')
+    
+    with open(env_path, 'w', encoding='utf-8') as f:
+        f.writelines(new_lines)
+    
+    print(f"[OK] Mot de passe sauvegardé dans {env_path}")
+
+def start_api():
+    """Demande si l'utilisateur veut démarrer l'API"""
+    print("\n" + "="*40)
+    print("[OK] INSTALLATION TERMINÉE!")
+    print("="*40)
+    
+    print("\nVoulez-vous démarrer l'API maintenant?")
+    response = input("Démarrer l'API? (oui/non): ").lower().strip()
+    
+    if response in ['oui', 'yes', 'o', 'y']:
+        print("\n[INFO] Démarrage de l'API...")
+        print("   Appuyez sur Ctrl+C pour arrêter\n")
+        
+        try:
+            subprocess.run([sys.executable, 'app.py'])
+        except KeyboardInterrupt:
+            print("\n[INFO] API arrêtée")
+    else:
+        print("\n[INFO] Pour démarrer manuellement:")
+        print("   python app.py")
+        print("\nDocumentation Swagger:")
+        print("   http://localhost:5000/docs")
 
 def main():
     """Fonction principale de setup"""
@@ -250,14 +344,8 @@ def main():
         print("\n[ECHEC] Problème avec la base de données")
         sys.exit(1)
     
-    print("\n" + "="*40)
-    print("[OK] SETUP TERMINÉ AVEC SUCCÈS!")
-    print("="*40)
-    print("\nProchaines étapes:")
-    print("  1. Lancer l'API: python app.py")
-    print("\nDocumentation:")
-    print("  - Swagger UI: http://localhost:5000/docs")
-    print("  - README.md pour plus d'infos")
+    # Propose de démarrer l'API
+    start_api()
 
 if __name__ == "__main__":
     main()
