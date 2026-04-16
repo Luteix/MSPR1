@@ -127,14 +127,13 @@ class AuthService:
         # Hash le mot de passe
         password_hash = AuthService.hash_password(password)
         
-        # Crée l'utilisateur
+        # Crée l'utilisateur (sans idPoste car pas de colonne dans la BDD)
         user_data = {
             'nom': nom,
             'prenom': prenom,
             'mail': email,
             'mdp': password_hash,
-            'idExploitation': id_exploitation,
-            'idPoste': id_poste
+            'idExploitation': id_exploitation
         }
         
         user = UtilisateurRepository.create(user_data)
@@ -182,8 +181,7 @@ class AuthService:
                 'nom': user.nom,
                 'prenom': user.prenom,
                 'email': user.mail,
-                'idExploitation': user.idExploitation,
-                'idPoste': user.idPoste
+                'idExploitation': user.idExploitation
             },
             'token': token
         }

@@ -96,7 +96,7 @@ class Exploitation(Base):
     Une exploitation est rattachée à un pays et peut gérer
     plusieurs entrepôts de stockage.
     """
-    __tablename__ = 'exploitation'
+    __tablename__ = 'exploitations'
     
     # Clé primaire (adaptée à la BDD : int(11))
     idExploitation = Column(Integer, primary_key=True, autoincrement=True)
@@ -145,13 +145,13 @@ class Utilisateur(Base):
     Chaque utilisateur est rattaché à une exploitation et peut
     gérer les stocks et les alertes de celle-ci.
     """
-    __tablename__ = 'utilisateur'
+    __tablename__ = 'utilisateurs'
     
-    # Clé primaire UUID
-    idUtilisateur = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    # Clé primaire (adaptée à la BDD : int(11))
+    idUtilisateur = Column(Integer, primary_key=True, autoincrement=True)
     
-    # Clé étrangère vers l'exploitation
-    idExploitation = Column(String(36), ForeignKey('exploitation.idExploitation'), nullable=False)
+    # Clé étrangère vers l'exploitation (adaptée à la BDD : int(11))
+    idExploitation = Column(Integer, ForeignKey('exploitations.idExploitation'), nullable=False)
     
     # Informations personnelles
     nom = Column(String(50), nullable=False)       # Nom de famille
@@ -159,8 +159,7 @@ class Utilisateur(Base):
     mail = Column(String(255), nullable=False, unique=True)  # Email unique
     mdp = Column(String(255), nullable=False)    # Mot de passe (hashé ou en clair)
     
-    # Clés étrangères
-    idPoste = Column(Integer, ForeignKey('poste.idPoste'), nullable=True)
+    # Note: pas de colonne idPoste dans la BDD actuelle
     
     # Relations
     exploitation = relationship("Exploitation", back_populates="utilisateurs")  # Plusieurs-à-un
@@ -192,13 +191,13 @@ class Entrepot(Base):
     plusieurs lots de grains. Il dispose de capteurs pour la surveillance
     de la température et de l'humidité.
     """
-    __tablename__ = 'entrepot'
+    __tablename__ = 'entrepots'
     
     # Clé primaire (adaptée à la BDD : int(11))
     idEntrepot = Column(Integer, primary_key=True, autoincrement=True)
     
     # Clé étrangère vers l'exploitation (adaptée à la BDD : int(11))
-    idExploitation = Column(Integer, ForeignKey('exploitation.idExploitation'), nullable=False)
+    idExploitation = Column(Integer, ForeignKey('exploitations.idExploitation'), nullable=False)
     
     # Informations sur l'entrepôt
     nom = Column(String(50), nullable=True)           # Nom de l'entrepôt (nullable dans la BDD)
@@ -263,7 +262,7 @@ class LotGrains(Base):
     idLotGrains = Column(Integer, primary_key=True, autoincrement=True)
     
     # Clé étrangère vers l'entrepôt de stockage (adaptée à la BDD : int(11))
-    idEntrepot = Column(Integer, ForeignKey('entrepot.idEntrepot'), nullable=True)
+    idEntrepot = Column(Integer, ForeignKey('entrepots.idEntrepot'), nullable=True)
     
     # Informations sur le lot
     datSto = Column(DateTime, nullable=True)  # Date d'entrée en stock (nullable dans la BDD)
@@ -297,12 +296,12 @@ class LotGrains(Base):
                 'idEntrepot': self.entrepot.idEntrepot,
                 'nom': self.entrepot.nom
             }
-            if self.entrepot.exploitation:
+            if self.entrepot.exploitations:
                 result['exploitation'] = {
-                    'idExploitation': self.entrepot.exploitation.idExploitation,
-                    'nom': self.entrepot.exploitation.nom
+                    'idExploitation': self.entrepot.exploitations.idExploitation,
+                    'nom': self.entrepot.exploitations.nom
                 }
-                if self.entrepot.exploitation.pays:
+                if self.entrepot.exploitations.pays:
                     result['pays'] = {
                         'idPays': self.entrepot.exploitation.pays.idPays,
                         'nom': self.entrepot.exploitation.pays.nom,
@@ -331,7 +330,7 @@ class Mesure(Base):
     idMesure = Column(Integer, primary_key=True, autoincrement=True)
     
     # Clé étrangère vers l'entrepôt où la mesure a été prise (adaptée à la BDD : int(11))
-    idEntrepot = Column(Integer, ForeignKey('entrepot.idEntrepot'), nullable=False)
+    idEntrepot = Column(Integer, ForeignKey('entrepots.idEntrepot'), nullable=False)
     
     # Données de la mesure
     temperature = Column(Float, nullable=True)  # Température en °C (nullable dans la BDD)
