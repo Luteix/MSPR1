@@ -1,6 +1,14 @@
 """
-Service d'authentification - Logique JWT et hashage
-Architecture 3 couches - Couche Domaine
+FICHIER: services/auth_service.py
+UTILITÉ: Logique métier d'authentification (Couche Domaine)
+
+Gère:
+- Hashage MDP avec bcrypt (hash_password)
+- Génération et vérification JWT (generate_token, verify_token)
+- Inscription et connexion (register, login)
+- Récupération utilisateur par token (get_current_user)
+
+Utilise UtilisateurRepository pour accéder à la BDD.
 """
 
 import jwt

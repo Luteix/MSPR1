@@ -1,7 +1,11 @@
 """
-Module de configuration et gestion de la base de données
+FICHIER: database.py
+UTILITÉ: Gestion de la connexion à la base de données MySQL
 
-Gère la connexion à MySQL/SQLite et les opérations de transaction.
+- Configure la connexion SQLAlchemy à MySQL (via .env ou valeurs par défaut)
+- Fournit get_db() pour obtenir une session BDD dans les repositories
+- Gère l'initialisation et le test de connexion
+- Supporte aussi SQLite en fallback pour les tests
 """
 
 import os

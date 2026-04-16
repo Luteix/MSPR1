@@ -1,7 +1,13 @@
 """
-Modèles de données SQLAlchemy pour l'API FutureKawa
+FICHIER: models.py
+UTILITÉ: Définition des modèles SQLAlchemy (ORM)
 
-Définit toutes les entités de la base de données.
+- Définit toutes les tables de la BDD comme classes Python
+- Configure les colonnes, types, clés primaires/étrangères
+- Établit les relations entre tables (OneToMany, ManyToOne)
+- Fournit to_dict() pour sérialiser les objets en JSON
+
+Modèles: Pays, Exploitation, Entrepot, LotGrains, Mesure, Alerte, Utilisateur
 """
 
 from datetime import datetime

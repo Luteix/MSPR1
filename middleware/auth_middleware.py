@@ -1,6 +1,17 @@
 """
-Middleware d'authentification - Décorateur pour protéger les routes
-Usage: @require_auth avant la définition de la route
+FICHIER: middleware/auth_middleware.py
+UTILITÉ: Protection des routes par JWT (Middleware)
+
+Fournit:
+- @require_auth : Décorateur pour protéger une route
+- Vérifie le header "Authorization: Bearer <token>"
+- Retourne 401 si token manquant, invalide ou expiré
+
+Usage:
+    @app.route('/admin')
+    @require_auth
+    def admin_route():
+        return jsonify({'message': 'Accès autorisé'})
 """
 
 from functools import wraps

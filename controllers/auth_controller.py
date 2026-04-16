@@ -1,6 +1,13 @@
 """
-Controller d'authentification - Routes HTTP login/register
-Architecture 3 couches - Couche HTTP
+FICHIER: controllers/auth_controller.py
+UTILITÉ: Routes HTTP pour l'authentification (Couche HTTP)
+
+Définit les endpoints:
+- POST /api/register : Inscription nouvel utilisateur
+- POST /api/login : Connexion et génération JWT
+- GET /api/verify : Vérification validité token
+
+Utilise AuthService pour la logique métier.
 """
 
 from flask import Blueprint, request, jsonify

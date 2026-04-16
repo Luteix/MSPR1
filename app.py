@@ -1,7 +1,13 @@
 """
-Application Flask FutureKawa
+FICHIER: app.py
+UTILITÉ: Point d'entrée principal de l'API Flask
 
-API REST pour la gestion de la chaîne d'approvisionnement du café.
+- Crée et configure l'application Flask (factory pattern)
+- Enregistre tous les blueprints (routes API)
+- Configure CORS, Swagger (documentation), et le middleware d'auth
+- Démarre le serveur sur http://localhost:5000
+
+Pour lancer: python app.py
 """
 
 import os

@@ -1,9 +1,13 @@
 """
-Configuration de l'application - EXEMPLE
+FICHIER: config.example.py
+UTILITÉ: Template de configuration JWT pour les développeurs
 
-1. Copier ce fichier en 'config.py'
-2. Générer une clé JWT sécurisée
-3. Ne JAMAIS commiter config.py (déjà dans .gitignore)
+- Copier ce fichier en 'config.py' (non commité, sécurisé)
+- Générer une clé JWT unique avec: python -c "import secrets; print(secrets.token_hex(32))"
+- config.py est dans .gitignore pour ne pas exposer la clé secrète sur GitHub
+
+Ce fichier sert uniquement d'exemple pour que chaque dev puisse configurer
+sa propre clé JWT localement sans partager de secrets.
 """
 
 import secrets

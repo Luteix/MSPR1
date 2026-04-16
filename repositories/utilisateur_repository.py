@@ -1,6 +1,14 @@
 """
-Repository Utilisateur - Accès BDD pour la gestion des utilisateurs
-Architecture 3 couches - Couche Database
+FICHIER: repositories/utilisateur_repository.py
+UTILITÉ: Accès base de données pour les utilisateurs (Couche Database)
+
+Fournit les opérations CRUD:
+- get_by_email() : Chercher par email (pour login)
+- get_by_id() : Chercher par ID (pour token)
+- create() : Créer nouvel utilisateur
+- update_password() : Mettre à jour le MDP
+
+Utilise get_db() pour les sessions SQLAlchemy.
 """
 
 from database import get_db
