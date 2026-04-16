@@ -49,7 +49,13 @@ L'API est structurée en 3 couches :
    pip install -r requirements.txt
    ```
 
-4. **Configurer les variables d'environnement**
+4. **Configurer l'application (création de config.py)**
+   ```bash
+   python setup.py
+   ```
+   Ce script crée automatiquement `config.py` avec une clé JWT unique.
+   
+5. **Configurer les variables d'environnement**
    ```bash
    # Créer un fichier .env
    cp .env.example .env
@@ -57,12 +63,12 @@ L'API est structurée en 3 couches :
    # Éditer .env avec votre configuration
    ```
 
-5. **Initialiser la base de données**
+6. **Initialiser la base de données**
    ```bash
    python database.py
    ```
 
-6. **Démarrer l'application**
+7. **Démarrer l'application**
    ```bash
    python app.py
    ```
