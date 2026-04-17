@@ -292,16 +292,16 @@ def setup_database(auto_mode=False):
                 conn.close()
                 return False
         
-        # futurekawa.sql (structure - mode non strict)
+        # futurekawa.sql (structure - mode non strict, sans base sélectionnée car contient USE)
         print("\n[INFO] Exécution de futurekawa.sql (structure)...")
         if execute_sql_file('futurekawa.sql', db_host, db_port, db_user, db_password, db_name=None, strict=False):
             print("[OK] Structure de la base créée")
         else:
             return False
         
-        # kawa_seed.sql (données - mode strict)
+        # kawa_seed.sql (données - mode strict, avec base sélectionnée)
         print("\n[INFO] Exécution de kawa_seed.sql (données)...")
-        if execute_sql_file('kawa_seed.sql', db_host, db_port, db_user, db_password, db_name, strict=True):
+        if execute_sql_file('kawa_seed.sql', db_host, db_port, db_user, db_password, db_name=db_name, strict=True):
             print("[OK] Données insérées")
         else:
             print("[ERREUR] Échec de l'insertion des données")
