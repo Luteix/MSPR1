@@ -244,6 +244,13 @@ def setup_database(auto_mode=False):
             with open(filepath, 'r', encoding='utf-8') as f:
                 sql_content = f.read()
             
+            # Nettoie le SQL : enlève CREATE DATABASE et USE qui posent problème avec MULTI_STATEMENTS
+            import re
+            # Supprime CREATE DATABASE ...
+            sql_content = re.sub(r'CREATE DATABASE\s+\w+\s*;?', '', sql_content, flags=re.IGNORECASE)
+            # Supprime USE ...
+            sql_content = re.sub(r'USE\s+\w+\s*;?', '', sql_content, flags=re.IGNORECASE)
+            
             # Connexion avec support multi-statements
             conn = pymysql.connect(
                 host=db_host,
