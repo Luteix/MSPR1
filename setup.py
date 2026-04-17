@@ -15,6 +15,13 @@ import secrets
 import shutil
 import subprocess
 
+# Import pymysql pour l'exécution des scripts SQL
+try:
+    import pymysql
+    import pymysql.constants
+except ImportError:
+    pymysql = None
+
 def generate_jwt_secret():
     """Génère une clé JWT sécurisée de 64 caractères hexadécimaux"""
     return secrets.token_hex(32)
@@ -178,11 +185,13 @@ def setup_database(auto_mode=False):
     elif not db_password and env_exists:
         print("[INFO] Utilisation du mot de passe vide depuis .env")
     
+    if pymysql is None:
+        print("[ERREUR] pymysql non installé")
+        return False
+    
     print(f"\n[INFO] Connexion à MySQL ({db_host}:{db_port})...")
     
     try:
-        import pymysql
-        
         # Connexion SANS base pour créer la base si besoin
         conn = pymysql.connect(
             host=db_host,
@@ -231,47 +240,55 @@ def setup_database(auto_mode=False):
     # Exécute les scripts SQL via Python (pas besoin de commande mysql externe)
     try:
         def execute_sql_file(filepath, db_host, db_port, db_user, db_password, db_name=None, strict=False):
-            """Exécute un fichier SQL via pymysql"""
+            """Exécute un fichier SQL via pymysql avec support multi-statements"""
             with open(filepath, 'r', encoding='utf-8') as f:
                 sql_content = f.read()
             
-            # Connexion
+            # Connexion avec support multi-statements
             conn = pymysql.connect(
                 host=db_host,
                 port=int(db_port),
                 user=db_user,
                 password=db_password,
                 database=db_name if db_name else None,
-                charset='utf8mb4'
+                charset='utf8mb4',
+                client_flag=pymysql.constants.CLIENT.MULTI_STATEMENTS
             )
-            cursor = conn.cursor()
             
-            success_count = 0
-            error_count = 0
-            
-            # Split les commandes et exécute
-            for statement in sql_content.split(';'):
-                stmt = statement.strip()
-                if stmt and not stmt.startswith('--') and not stmt.startswith('/*'):
-                    try:
-                        cursor.execute(stmt)
-                        success_count += 1
-                    except Exception as e:
-                        # En mode strict (données), on affiche toutes les erreurs
-                        if strict or 'INSERT' in stmt.upper():
-                            print(f"   [ERREUR SQL] {str(e)[:80]}")
-                            error_count += 1
-                        # En mode non-strict (structure), on ignore certains warnings
-                        elif 'USE' not in stmt.upper() and 'DROP' not in stmt.upper():
-                            print(f"   [WARN] {str(e)[:60]}")
-            
-            conn.commit()
-            conn.close()
-            
-            if strict and error_count > 0:
-                print(f"   [INFO] {success_count} OK, {error_count} erreurs")
+            try:
+                cursor = conn.cursor()
+                
+                # Exécute tout le fichier d'un coup (MySQL gère le parsing)
+                try:
+                    cursor.execute(sql_content)
+                    
+                    # Récupère tous les résultats pour vider le buffer
+                    while cursor.nextset():
+                        pass
+                        
+                except Exception as e:
+                    # Certains warnings sont OK (ex: table existe déjà)
+                    error_msg = str(e)
+                    if 'already exists' in error_msg.lower() or '1062' in error_msg:
+                        if not strict:
+                            print(f"   [WARN] {error_msg[:60]}")
+                        else:
+                            print(f"   [ERREUR SQL] {error_msg[:80]}")
+                            conn.close()
+                            return False
+                    else:
+                        print(f"   [ERREUR SQL] {error_msg[:80]}")
+                        conn.close()
+                        return False
+                
+                conn.commit()
+                conn.close()
+                return True
+                
+            except Exception as e:
+                print(f"   [ERREUR] {str(e)[:80]}")
+                conn.close()
                 return False
-            return True
         
         # futurekawa.sql (structure - mode non strict)
         print("\n[INFO] Exécution de futurekawa.sql (structure)...")
