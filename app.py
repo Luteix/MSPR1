@@ -14,7 +14,8 @@ import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flasgger import Swagger
-from database import init_db, test_connection
+from database import init_db, test_connection, get_db
+from sqlalchemy import text
 
 # Import des blueprints pour l'organisation modulaire de l'API
 from controllers.pays_controller import pays_bp
@@ -151,16 +152,56 @@ def setup_database_auto():
         return False
 
 
+def check_database_has_data():
+    """Vérifie si la BDD contient des données (utilisateurs)"""
+    try:
+        with get_db() as session:
+            result = session.execute(text("SELECT COUNT(*) FROM utilisateurs")).scalar()
+            return result > 0
+    except:
+        return False
+
+
+def run_setup():
+    """Lance setup.py pour créer la BDD avec les données complètes"""
+    import subprocess
+    import sys
+    
+    print("\n" + "="*50)
+    print("[INFO] Lancement de l'installation complète...")
+    print("="*50 + "\n")
+    
+    try:
+        result = subprocess.run([sys.executable, "setup.py"], check=True)
+        return result.returncode == 0
+    except subprocess.CalledProcessError:
+        return False
+    except KeyboardInterrupt:
+        print("\n[INFO] Installation annulée par l'utilisateur")
+        return False
+
+
 if __name__ == '__main__':
     """Point d'entrée principal de l'application"""
     print("Initialisation de l'API Futurekawa...")
     
     # Vérifie/crée la base de données automatiquement
     if not test_connection():
-        print("[INFO] Base de données inexistante, création automatique...")
-        if not setup_database_auto():
-            print("[ERREUR] Échec de la création de la base de données")
+        print("[INFO] Base de données inexistante...")
+        # Lance setup.py pour installation complète
+        if not run_setup():
+            print("[ERREUR] Échec de l'installation")
             exit(1)
+        print("\n[INFO] Redémarrage de l'API...")
+    
+    # Vérifie si des données existent
+    elif not check_database_has_data():
+        print("[INFO] Base de données vide, données manquantes...")
+        # Lance setup.py pour injecter les données
+        if not run_setup():
+            print("[ERREUR] Échec de l'installation")
+            exit(1)
+        print("\n[INFO] Redémarrage de l'API...")
     
     # Maintenant la connexion doit fonctionner
     if test_connection():
@@ -169,6 +210,12 @@ if __name__ == '__main__':
         # Initialisation des tables (les crée si elles n'existent pas)
         init_db()
         print("[OK] Tables initialisées")
+        
+        # Vérifie les données
+        if check_database_has_data():
+            print("[OK] Données présentes en base")
+        else:
+            print("[AVERTISSEMENT] Aucune donnée en base - lancez setup.py manuellement")
         
         # Lancement de l'application
         app = create_app()
