@@ -292,9 +292,9 @@ def setup_database(auto_mode=False):
                 conn.close()
                 return False
         
-        # futurekawa.sql (structure - mode non strict, sans base sélectionnée car contient USE)
+        # futurekawa.sql (structure - mode non strict)
         print("\n[INFO] Exécution de futurekawa.sql (structure)...")
-        if execute_sql_file('futurekawa.sql', db_host, db_port, db_user, db_password, db_name=None, strict=False):
+        if execute_sql_file('futurekawa.sql', db_host, db_port, db_user, db_password, db_name=db_name, strict=False):
             print("[OK] Structure de la base créée")
         else:
             return False
