@@ -162,24 +162,37 @@ def check_database_has_data():
         return False
 
 
-def run_setup():
-    """Lance setup.py pour créer la BDD avec les données complètes"""
-    import subprocess
-    import sys
-    
+def run_setup_direct():
+    """Exécute setup directement sans subprocess pour éviter les boucles"""
     print("\n" + "="*50)
-    print("[INFO] Lancement de l'installation complète...")
+    print("[INFO] Initialisation de la base de données...")
     print("="*50 + "\n")
     
-    try:
-        # Mode --auto pour éviter les questions interactives
-        result = subprocess.run([sys.executable, "setup.py", "--auto"], check=True)
-        return result.returncode == 0
-    except subprocess.CalledProcessError:
+    # Import ici pour éviter les imports circulaires
+    from setup import setup_config, setup_env, check_dependencies, setup_database
+    
+    # Setup config
+    if not setup_config():
+        print("[ERREUR] Échec de la configuration")
         return False
-    except KeyboardInterrupt:
-        print("\n[INFO] Installation annulée par l'utilisateur")
+    
+    # Setup .env
+    if not setup_env():
+        print("[ERREUR] Échec de la configuration .env")
         return False
+    
+    # Vérifie dépendances
+    if not check_dependencies():
+        print("[ERREUR] Dépendances manquantes")
+        return False
+    
+    # Setup BDD en mode auto (sans questions interactives)
+    if not setup_database(auto_mode=True):
+        print("[ERREUR] Échec de la configuration de la base de données")
+        return False
+    
+    print("[OK] Base de données initialisée avec succès")
+    return True
 
 
 if __name__ == '__main__':
@@ -195,9 +208,13 @@ if __name__ == '__main__':
     
     if not connection_ok:
         print("[INFO] Base de données inexistante ou inaccessible...")
-        # Lance setup.py pour installation complète
-        if not run_setup():
-            print("[ERREUR] Échec de l'installation - vérifiez que MySQL est démarré")
+        # Crée la BDD automatiquement
+        if not setup_database_auto():
+            print("[ERREUR] Échec de la création de la base de données")
+            exit(1)
+        # Exécute le setup complet pour créer les tables et données
+        if not run_setup_direct():
+            print("[ERREUR] Échec de l'initialisation")
             exit(1)
         print("[OK] Installation terminée\n")
     
@@ -210,9 +227,9 @@ if __name__ == '__main__':
         
         if not has_data:
             print("[INFO] Base de données vide, données manquantes...")
-            # Lance setup.py pour injecter les données
-            if not run_setup():
-                print("[ERREUR] Échec de l'installation")
+            # Exécute juste le setup BDD pour injecter les données
+            if not run_setup_direct():
+                print("[ERREUR] Échec de l'insertion des données")
                 exit(1)
             print("[OK] Données insérées\n")
     
