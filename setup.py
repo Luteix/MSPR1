@@ -230,7 +230,7 @@ def setup_database(auto_mode=False):
     
     # Exécute les scripts SQL via Python (pas besoin de commande mysql externe)
     try:
-        def execute_sql_file(filepath, db_host, db_port, db_user, db_password, db_name=None):
+        def execute_sql_file(filepath, db_host, db_port, db_user, db_password, db_name=None, strict=False):
             """Exécute un fichier SQL via pymysql"""
             with open(filepath, 'r', encoding='utf-8') as f:
                 sql_content = f.read()
@@ -246,33 +246,46 @@ def setup_database(auto_mode=False):
             )
             cursor = conn.cursor()
             
+            success_count = 0
+            error_count = 0
+            
             # Split les commandes et exécute
             for statement in sql_content.split(';'):
                 stmt = statement.strip()
                 if stmt and not stmt.startswith('--') and not stmt.startswith('/*'):
                     try:
                         cursor.execute(stmt)
+                        success_count += 1
                     except Exception as e:
-                        # Ignore les erreurs de commandes qui peuvent échouer silencieusement
-                        if 'USE' not in stmt.upper():
-                            print(f"   [WARN] Commande ignorée: {str(e)[:60]}")
+                        # En mode strict (données), on affiche toutes les erreurs
+                        if strict or 'INSERT' in stmt.upper():
+                            print(f"   [ERREUR SQL] {str(e)[:80]}")
+                            error_count += 1
+                        # En mode non-strict (structure), on ignore certains warnings
+                        elif 'USE' not in stmt.upper() and 'DROP' not in stmt.upper():
+                            print(f"   [WARN] {str(e)[:60]}")
             
             conn.commit()
             conn.close()
+            
+            if strict and error_count > 0:
+                print(f"   [INFO] {success_count} OK, {error_count} erreurs")
+                return False
             return True
         
-        # futurekawa.sql
+        # futurekawa.sql (structure - mode non strict)
         print("\n[INFO] Exécution de futurekawa.sql (structure)...")
-        if execute_sql_file('futurekawa.sql', db_host, db_port, db_user, db_password):
+        if execute_sql_file('futurekawa.sql', db_host, db_port, db_user, db_password, db_name=None, strict=False):
             print("[OK] Structure de la base créée")
         else:
             return False
         
-        # kawa_seed.sql
+        # kawa_seed.sql (données - mode strict)
         print("\n[INFO] Exécution de kawa_seed.sql (données)...")
-        if execute_sql_file('kawa_seed.sql', db_host, db_port, db_user, db_password, db_name):
+        if execute_sql_file('kawa_seed.sql', db_host, db_port, db_user, db_password, db_name, strict=True):
             print("[OK] Données insérées")
         else:
+            print("[ERREUR] Échec de l'insertion des données")
             return False
         
         print("[OK] Base de données prête!")
