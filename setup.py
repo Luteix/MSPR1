@@ -223,42 +223,59 @@ def setup_database():
         print("   Vérifiez que MySQL est démarré et accessible")
         return False
     
-    # Exécute les scripts SQL
+    # Exécute les scripts SQL via Python (pas besoin de commande mysql externe)
     try:
+        def execute_sql_file(filepath, db_host, db_port, db_user, db_password, db_name=None):
+            """Exécute un fichier SQL via pymysql"""
+            with open(filepath, 'r', encoding='utf-8') as f:
+                sql_content = f.read()
+            
+            # Connexion
+            conn = pymysql.connect(
+                host=db_host,
+                port=int(db_port),
+                user=db_user,
+                password=db_password,
+                database=db_name if db_name else None,
+                charset='utf8mb4'
+            )
+            cursor = conn.cursor()
+            
+            # Split les commandes et exécute
+            for statement in sql_content.split(';'):
+                stmt = statement.strip()
+                if stmt and not stmt.startswith('--') and not stmt.startswith('/*'):
+                    try:
+                        cursor.execute(stmt)
+                    except Exception as e:
+                        # Ignore les erreurs de commandes qui peuvent échouer silencieusement
+                        if 'USE' not in stmt.upper():
+                            print(f"   [WARN] Commande ignorée: {str(e)[:60]}")
+            
+            conn.commit()
+            conn.close()
+            return True
+        
         # futurekawa.sql
         print("\n[INFO] Exécution de futurekawa.sql (structure)...")
-        cmd1 = f'mysql -h {db_host} -P {db_port} -u {db_user} -p"{db_password}" < futurekawa.sql'
-        result1 = subprocess.run(cmd1, shell=True, capture_output=True, text=True)
-        
-        if result1.returncode != 0:
-            # Fallback: essayer sans les guillemets
-            cmd1_alt = f'mysql -h {db_host} -P {db_port} -u {db_user} -p{db_password} < futurekawa.sql'
-            result1 = subprocess.run(cmd1_alt, shell=True, capture_output=True, text=True)
-        
-        if result1.returncode != 0:
-            print(f"[ERREUR] futurekawa.sql: {result1.stderr}")
+        if execute_sql_file('futurekawa.sql', db_host, db_port, db_user, db_password):
+            print("[OK] Structure de la base créée")
+        else:
             return False
-        
-        print("[OK] Structure de la base créée")
         
         # kawa_seed.sql
         print("\n[INFO] Exécution de kawa_seed.sql (données)...")
-        cmd2 = f'mysql -h {db_host} -P {db_port} -u {db_user} -p"{db_password}" {db_name} < kawa_seed.sql'
-        result2 = subprocess.run(cmd2, shell=True, capture_output=True, text=True)
-        
-        if result2.returncode != 0:
-            cmd2_alt = f'mysql -h {db_host} -P {db_port} -u {db_user} -p{db_password} {db_name} < kawa_seed.sql'
-            result2 = subprocess.run(cmd2_alt, shell=True, capture_output=True, text=True)
-        
-        if result2.returncode != 0:
-            print(f"[ERREUR] kawa_seed.sql: {result2.stderr}")
+        if execute_sql_file('kawa_seed.sql', db_host, db_port, db_user, db_password, db_name):
+            print("[OK] Données insérées")
+        else:
             return False
         
-        print("[OK] Données insérées")
         print("[OK] Base de données prête!")
         
     except Exception as e:
         print(f"[ERREUR] Impossible d'exécuter les scripts SQL: {e}")
+        import traceback
+        traceback.print_exc()
         return False
     
     return True
