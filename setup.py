@@ -158,8 +158,10 @@ def setup_database():
     db_user = os.getenv('DB_USER', 'root')
     db_password = os.getenv('DB_PASSWORD', '')
     
-    # Si pas de MDP configuré, demande interactivement
-    if not db_password or db_password == 'votre_mot_de_passe':
+    # Si pas de MDP configuré explicitement, demande interactivement
+    env_exists = os.path.exists('.env') and os.getenv('DB_PASSWORD') is not None
+    
+    if db_password == 'votre_mot_de_passe' or (not db_password and not env_exists):
         print("[INFO] Configuration de la connexion MySQL requise")
         print("\nLes paramètres par défaut sont:")
         print(f"  - Hôte: {db_host}")
@@ -167,14 +169,14 @@ def setup_database():
         print(f"  - Utilisateur: {db_user}")
         print(f"  - Base: {db_name}")
         
-        db_password = input("\nMot de passe MySQL (root): ").strip()
+        db_password_input = input("\nMot de passe MySQL (root) [Entrée pour vide]: ").strip()
+        db_password = db_password_input  # Peut être vide
         
-        if not db_password:
-            print("[ERREUR] Mot de passe requis")
-            return False
-        
-        # Sauvegarde dans .env
+        # Sauvegarde dans .env si différent
         save_password_to_env(db_password)
+    
+    elif not db_password and env_exists:
+        print("[INFO] Utilisation du mot de passe vide depuis .env")
     
     print(f"\n[INFO] Connexion à MySQL ({db_host}:{db_port})...")
     

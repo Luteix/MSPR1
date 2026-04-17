@@ -185,26 +185,43 @@ if __name__ == '__main__':
     """Point d'entrée principal de l'application"""
     print("Initialisation de l'API Futurekawa...")
     
-    # Vérifie/crée la base de données automatiquement
-    if not test_connection():
-        print("[INFO] Base de données inexistante...")
+    # Vérifie/crée la base de données automatiquement (sans erreur affichée)
+    connection_ok = False
+    try:
+        connection_ok = test_connection()
+    except:
+        connection_ok = False
+    
+    if not connection_ok:
+        print("[INFO] Base de données inexistante ou inaccessible...")
         # Lance setup.py pour installation complète
         if not run_setup():
-            print("[ERREUR] Échec de l'installation")
+            print("[ERREUR] Échec de l'installation - vérifiez que MySQL est démarré")
             exit(1)
         print("\n[INFO] Redémarrage de l'API...")
     
     # Vérifie si des données existent
-    elif not check_database_has_data():
-        print("[INFO] Base de données vide, données manquantes...")
-        # Lance setup.py pour injecter les données
-        if not run_setup():
-            print("[ERREUR] Échec de l'installation")
-            exit(1)
-        print("\n[INFO] Redémarrage de l'API...")
+    else:
+        try:
+            has_data = check_database_has_data()
+        except:
+            has_data = False
+        
+        if not has_data:
+            print("[INFO] Base de données vide, données manquantes...")
+            # Lance setup.py pour injecter les données
+            if not run_setup():
+                print("[ERREUR] Échec de l'installation")
+                exit(1)
+            print("\n[INFO] Redémarrage de l'API...")
     
     # Maintenant la connexion doit fonctionner
-    if test_connection():
+    try:
+        connection_ok = test_connection()
+    except:
+        connection_ok = False
+    
+    if connection_ok:
         print("[OK] Connexion à la base de données réussie")
         
         # Initialisation des tables (les crée si elles n'existent pas)
@@ -212,10 +229,13 @@ if __name__ == '__main__':
         print("[OK] Tables initialisées")
         
         # Vérifie les données
-        if check_database_has_data():
-            print("[OK] Données présentes en base")
-        else:
-            print("[AVERTISSEMENT] Aucune donnée en base - lancez setup.py manuellement")
+        try:
+            if check_database_has_data():
+                print("[OK] Données présentes en base")
+            else:
+                print("[AVERTISSEMENT] Aucune donnée en base")
+        except:
+            print("[AVERTISSEMENT] Impossible de vérifier les données")
         
         # Lancement de l'application
         app = create_app()
