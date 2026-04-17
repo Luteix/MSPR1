@@ -316,11 +316,16 @@ def save_password_to_env(password):
     
     print(f"[OK] Mot de passe sauvegardé dans {env_path}")
 
-def start_api():
+def start_api(auto_mode=False):
     """Demande si l'utilisateur veut démarrer l'API"""
     print("\n" + "="*40)
     print("[OK] INSTALLATION TERMINÉE!")
     print("="*40)
+    
+    if auto_mode:
+        # Mode automatique: ne pas demander, juste afficher
+        print("\n[INFO] Installation terminée, retour à l'API...")
+        return
     
     print("\nVoulez-vous démarrer l'API maintenant?")
     response = input("Démarrer l'API? (oui/non): ").lower().strip()
@@ -339,32 +344,37 @@ def start_api():
         print("\nDocumentation Swagger:")
         print("   http://localhost:5000/docs")
 
-def main():
+def main(auto_mode=False):
     """Fonction principale de setup"""
-    print("FutureKawa API - Installation\n")
+    if not auto_mode:
+        print("FutureKawa API - Installation\n")
     
     # Setup config (JWT)
     if not setup_config():
         print("\n[ECHEC] Impossible de créer config.py")
-        sys.exit(1)
+        return False
     
     # Setup .env (variables BDD)
     if not setup_env():
         print("\n[ECHEC] Impossible de créer .env")
-        sys.exit(1)
+        return False
     
     # Vérifie dépendances
     if not check_dependencies():
         print("\n[ECHEC] Dépendances manquantes")
-        sys.exit(1)
+        return False
     
     # Setup base de données
     if not setup_database():
         print("\n[ECHEC] Problème avec la base de données")
-        sys.exit(1)
+        return False
     
-    # Propose de démarrer l'API
-    start_api()
+    # Propose de démarrer l'API (ou juste affiche en mode auto)
+    start_api(auto_mode)
+    return True
 
 if __name__ == "__main__":
-    main()
+    # Détecte si --auto est passé en argument
+    auto_mode = '--auto' in sys.argv
+    success = main(auto_mode)
+    sys.exit(0 if success else 1)

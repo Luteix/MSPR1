@@ -172,7 +172,8 @@ def run_setup():
     print("="*50 + "\n")
     
     try:
-        result = subprocess.run([sys.executable, "setup.py"], check=True)
+        # Mode --auto pour éviter les questions interactives
+        result = subprocess.run([sys.executable, "setup.py", "--auto"], check=True)
         return result.returncode == 0
     except subprocess.CalledProcessError:
         return False
@@ -198,7 +199,7 @@ if __name__ == '__main__':
         if not run_setup():
             print("[ERREUR] Échec de l'installation - vérifiez que MySQL est démarré")
             exit(1)
-        print("\n[INFO] Redémarrage de l'API...")
+        print("[OK] Installation terminée\n")
     
     # Vérifie si des données existent
     else:
@@ -213,7 +214,7 @@ if __name__ == '__main__':
             if not run_setup():
                 print("[ERREUR] Échec de l'installation")
                 exit(1)
-            print("\n[INFO] Redémarrage de l'API...")
+            print("[OK] Données insérées\n")
     
     # Maintenant la connexion doit fonctionner
     try:
