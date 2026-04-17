@@ -267,15 +267,17 @@ def setup_database(auto_mode=False):
                         pass
                         
                 except Exception as e:
-                    # Certains warnings sont OK (ex: table existe déjà)
+                    # Certains warnings sont OK (ex: table/base existe déjà)
                     error_msg = str(e)
-                    if 'already exists' in error_msg.lower() or '1062' in error_msg:
+                    if ('already exists' in error_msg.lower() or 
+                        '1007' in error_msg or  # Database exists
+                        '1062' in error_msg or  # Duplicate entry
+                        '1050' in error_msg):    # Table exists
                         if not strict:
-                            print(f"   [WARN] {error_msg[:60]}")
+                            # En mode non-strict, on ignore silencieusement
+                            pass
                         else:
-                            print(f"   [ERREUR SQL] {error_msg[:80]}")
-                            conn.close()
-                            return False
+                            print(f"   [WARN] {error_msg[:60]}")
                     else:
                         print(f"   [ERREUR SQL] {error_msg[:80]}")
                         conn.close()
