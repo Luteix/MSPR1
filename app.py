@@ -116,17 +116,59 @@ def create_app():
     
     return app
 
+def setup_database_auto():
+    """Crée la BDD et les tables automatiquement si elles n'existent pas"""
+    import pymysql
+    from dotenv import load_dotenv
+    
+    load_dotenv()
+    
+    db_host = os.getenv('DB_HOST', 'localhost')
+    db_port = int(os.getenv('DB_PORT', '3306'))
+    db_name = os.getenv('DB_NAME', 'futurekawa')
+    db_user = os.getenv('DB_USER', 'root')
+    db_password = os.getenv('DB_PASSWORD', '')
+    
+    try:
+        # Essaie de se connecter SANS spécifier de base
+        conn = pymysql.connect(
+            host=db_host,
+            port=db_port,
+            user=db_user,
+            password=db_password
+        )
+        cursor = conn.cursor()
+        
+        # Crée la base si elle n'existe pas
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db_name}")
+        print(f"[OK] Base de données '{db_name}' prête")
+        
+        conn.close()
+        return True
+        
+    except Exception as e:
+        print(f"[ERREUR] Impossible de créer la base de données: {e}")
+        return False
+
+
 if __name__ == '__main__':
     """Point d'entrée principal de l'application"""
     print("Initialisation de l'API Futurekawa...")
     
-    # Test de connexion à la base de données
+    # Vérifie/crée la base de données automatiquement
+    if not test_connection():
+        print("[INFO] Base de données inexistante, création automatique...")
+        if not setup_database_auto():
+            print("[ERREUR] Échec de la création de la base de données")
+            exit(1)
+    
+    # Maintenant la connexion doit fonctionner
     if test_connection():
-        print("Connexion à la base de données réussie")
+        print("[OK] Connexion à la base de données réussie")
         
-        # Initialisation des tables
+        # Initialisation des tables (les crée si elles n'existent pas)
         init_db()
-        print("Base de données initialisée")
+        print("[OK] Tables initialisées")
         
         # Lancement de l'application
         app = create_app()
@@ -134,10 +176,10 @@ if __name__ == '__main__':
         host = os.getenv('HOST', '0.0.0.0')
         port = int(os.getenv('PORT', 5000))
         
-        print(f"API démarrée sur http://{host}:{port}")
-        print(f"Documentation disponible sur http://{host}:{port}/docs")
+        print(f"[OK] API démarrée sur http://{host}:{port}")
+        print(f"[OK] Documentation sur http://{host}:{port}/docs")
         
         app.run(host=host, port=port, debug=app.config['DEBUG'])
     else:
-        print("Erreur de connexion à la base de données")
+        print("[ERREUR] Connexion à la base de données impossible")
         exit(1)
