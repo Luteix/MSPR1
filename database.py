@@ -60,6 +60,13 @@ def init_database():
     
     print(f"Base de données initialisée: {database_url}")
 
+def reset_database_connection():
+    """Réinitialise la connexion SQLAlchemy (utile après création de BDD)"""
+    global engine, SessionLocal
+    engine = None
+    SessionLocal = None
+    init_database()
+
 def get_db():
     """Crée une nouvelle session de base de données"""
     if SessionLocal is None:

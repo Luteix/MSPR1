@@ -127,10 +127,10 @@ FLASK_DEBUG=True
     print("   ⚠️  Modifiez DB_PASSWORD avec votre vrai mot de passe MySQL")
     return True
 
-def setup_database():
+def setup_database(auto_mode=False):
     """
     Initialise la base de données avec les scripts SQL.
-    Demande interactivement le mot de passe MySQL si non configuré.
+    Demande interactivement le mot de passe MySQL si non configuré (sauf en mode auto).
     """
     print("\n=== BASE DE DONNÉES ===")
     
@@ -206,6 +206,11 @@ def setup_database():
             
             if tables:
                 print(f"[INFO] {len(tables)} tables trouvées")
+                if auto_mode:
+                    # Mode auto: conserve la base existante
+                    print("[INFO] Mode auto: conservation de la base existante")
+                    conn.close()
+                    return True
                 response = input("\nRéinitialiser la base de données? (oui/non): ").lower().strip()
                 if response not in ['oui', 'yes', 'o', 'y']:
                     print("[INFO] Conservation de la base existante")
@@ -365,7 +370,7 @@ def main(auto_mode=False):
         return False
     
     # Setup base de données
-    if not setup_database():
+    if not setup_database(auto_mode):
         print("\n[ECHEC] Problème avec la base de données")
         return False
     

@@ -14,7 +14,7 @@ import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flasgger import Swagger
-from database import init_db, test_connection, get_db
+from database import init_db, test_connection, get_db, reset_database_connection
 from sqlalchemy import text
 
 # Import des blueprints pour l'organisation modulaire de l'API
@@ -216,6 +216,8 @@ if __name__ == '__main__':
         if not run_setup_direct():
             print("[ERREUR] Échec de l'initialisation")
             exit(1)
+        # Réinitialise la connexion SQLAlchemy avec la nouvelle BDD
+        reset_database_connection()
         print("[OK] Installation terminée\n")
     
     # Vérifie si des données existent
@@ -231,6 +233,8 @@ if __name__ == '__main__':
             if not run_setup_direct():
                 print("[ERREUR] Échec de l'insertion des données")
                 exit(1)
+            # Réinitialise la connexion
+            reset_database_connection()
             print("[OK] Données insérées\n")
     
     # Maintenant la connexion doit fonctionner
