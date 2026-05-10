@@ -296,12 +296,12 @@ class LotGrains(Base):
                 'idEntrepot': self.entrepot.idEntrepot,
                 'nom': self.entrepot.nom
             }
-            if self.entrepot.exploitations:
+            if self.entrepot.exploitation:
                 result['exploitation'] = {
-                    'idExploitation': self.entrepot.exploitations.idExploitation,
-                    'nom': self.entrepot.exploitations.nom
+                    'idExploitation': self.entrepot.exploitation.idExploitation,
+                    'nom': self.entrepot.exploitation.nom
                 }
-                if self.entrepot.exploitations.pays:
+                if self.entrepot.exploitation.pays:
                     result['pays'] = {
                         'idPays': self.entrepot.exploitation.pays.idPays,
                         'nom': self.entrepot.exploitation.pays.nom,
