@@ -77,5 +77,6 @@ CREATE TABLE Utilisateurs(
 );
 
 INSERT INTO Postes (intitule) VALUES
-('EmployÃ©'),
-('Responsable exploitation');
+('Employé'),
+('Responsable exploitation'),
+('Admin');
