@@ -13,8 +13,7 @@ Modèles: Pays, Exploitation, Entrepot, LotGrains, Mesure, Alerte, Utilisateur
 from datetime import datetime
 from enum import Enum
 from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey, Enum as SQLEnum, event
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import declarative_base, relationship
 import uuid
 import bcrypt
 

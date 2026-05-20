@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func, and_, or_
 from models import LotGrains, Entrepot, Exploitation, Pays, Mesure, Alerte, StatutLot, TypeAlerte
@@ -112,7 +112,7 @@ class LotService:
     @staticmethod
     def update_lot(lot_id, data):
         """
-        Met à jour un lot (principalement pour datSortie)
+        Met à jour un lot (datSortie, statut, etc.)
         """
         session = get_db()
         try:
@@ -128,6 +128,13 @@ class LotService:
                     lot.datSortie = datetime.fromisoformat(data['datSortie'].replace('Z', '+00:00')) if isinstance(data['datSortie'], str) else data['datSortie']
                 else:
                     lot.datSortie = None
+            
+            # Ajout de la mise à jour du statut avec validation
+            if 'statut' in data:
+                valid_statuses = [s.value for s in StatutLot]
+                if data['statut'] not in valid_statuses:
+                    raise ValueError(f"Statut invalide. Les valeurs possibles sont : {', '.join(valid_statuses)}")
+                lot.statut = data['statut']
             
             commit_session()
             return lot.to_dict()
@@ -152,21 +159,20 @@ class LotService:
             
             for lot in lots:
                 ancien_statut = lot.statut
-                nouveau_statut = LotService._calculer_statut_lot(lot)
+                nouveau_statut = LotService._calculer_statut_lot(lot, session)
                 
-                if ancien_statut != nouveau_statut:
-                    lot.statut = nouveau_statut
+                if ancien_statut != nouveau_statut.value:
+                    lot.statut = nouveau_statut.value
                     
                     # Créer une alerte si le lot devient périmé
                     if nouveau_statut == StatutLot.PERIME:
-                        alerte = Alerte(
-                            idEntrepot=lot.idEntrepot,
-                            idLotGrains=lot.idLotGrains,
-                            type=TypeAlerte.LOT_PERIME,
-                            dateAlerte=datetime.utcnow(),
-                            statut="en cours"
-                        )
-                        session.add(alerte)
+                        # NOTE: Le modèle Alerte actuel ne supporte que les alertes
+                        # liées à une Mesure. La création d'une alerte de péremption
+                        # nécessite une évolution du modèle Alerte pour ajouter des champs
+                        # comme 'type', 'statut', 'idLotGrains', etc.
+                        # alerte = Alerte(...)
+                        # session.add(alerte)
+                        pass # On ne crée pas d'alerte pour l'instant
             
             commit_session()
         except Exception as e:
@@ -176,13 +182,13 @@ class LotService:
             session.close()
     
     @staticmethod
-    def _calculer_statut_lot(lot):
+    def _calculer_statut_lot(lot, session):
         """
         Calcule le statut d'un lot selon les règles métier
         """
         # Vérifier si le lot est périmé (> 365 jours)
         if lot.datSto:
-            age_jours = (datetime.utcnow() - lot.datSto).days
+            age_jours = (datetime.now(UTC) - lot.datSto).days
             if age_jours > 365:
                 return StatutLot.PERIME
             

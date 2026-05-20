@@ -1,6 +1,6 @@
 """Service pour les entrepôts - Couche Domaine"""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 from models import Entrepot, Exploitation, Mesure, LotGrains
@@ -32,7 +32,7 @@ class EntrepotService:
         """
         session = get_db()
         try:
-            date_debut = datetime.utcnow() - timedelta(days=periode)
+            date_debut = datetime.now(UTC) - timedelta(days=periode)
             
             mesures = session.query(Mesure).filter(
                 and_(

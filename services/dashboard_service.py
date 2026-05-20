@@ -17,10 +17,10 @@ class DashboardService:
             # Métriques globales
             lots_stockes = session.query(LotGrains).count()
             lots_alerte = session.query(LotGrains).filter(
-                LotGrains.statut == StatutLot.EN_ALERTE
+                LotGrains.statut == StatutLot.EN_ALERTE.value
             ).count()
             lots_perimes = session.query(LotGrains).filter(
-                LotGrains.statut == StatutLot.PERIME
+                LotGrains.statut == StatutLot.PERIME.value
             ).count()
             entrepots_actifs = session.query(Entrepot).count()
             
@@ -55,7 +55,7 @@ class DashboardService:
                 lots_en_alerte = session.query(LotGrains).join(Entrepot).join(Exploitation).filter(
                     and_(
                         Exploitation.idPays == pays.idPays,
-                        LotGrains.statut == StatutLot.EN_ALERTE
+                        LotGrains.statut == StatutLot.EN_ALERTE.value
                     )
                 ).count()
                 
@@ -86,15 +86,6 @@ class DashboardService:
         finally:
             session.close()
 
-    @staticmethod
-    def get_all_alertes():
-        """Récupère toutes les alertes"""
-        try:
-            alertes = DashboardRepository.get_alertes_with_hierarchy()
-            return alertes
-        except Exception as e:
-            raise e
-    
     @staticmethod
     def get_recent_alertes(limit=5):
         """Récupère les alertes récentes"""
@@ -146,7 +137,9 @@ class DashboardService:
             if not alerte:
                 return None
             
-            alerte.statut = statut
+            # NOTE: Le modèle Alerte n'a pas de champ 'statut'.
+            # Cette fonctionnalité nécessite une évolution du modèle.
+            # alerte.statut = statut
             commit_session()
             return alerte.to_dict()
         except Exception as e:

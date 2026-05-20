@@ -1,42 +1,21 @@
-"""Repository pour les alertes - Couche BDD"""
+"""Repository pour les alertes - Couche d'accès aux données"""
 
-from database import get_db, commit_session, rollback_session
 from models import Alerte
+from database import get_db, commit_session, rollback_session, close_session
 
 class AlerteRepository:
-    """Gestion des opérations BDD pour les alertes"""
-    
     @staticmethod
-    def create(alerte_data):
-        """Crée une nouvelle alerte"""
+    def create(data):
+        """Crée une nouvelle alerte en base de données."""
         session = get_db()
         try:
-            alerte = Alerte(**alerte_data)
+            alerte = Alerte(**data)
             session.add(alerte)
-            session.commit()
-            session.refresh(alerte)
-            session.expunge(alerte)
+            commit_session()
+            session.refresh(alerte)  # Pour obtenir l'ID auto-généré
             return alerte
         except Exception as e:
-            session.rollback()
+            rollback_session()
             raise e
         finally:
-            session.close()
-    
-    @staticmethod
-    def get_all():
-        """Récupère toutes les alertes"""
-        session = get_db()
-        try:
-            return session.query(Alerte).order_by(Alerte.idAlerte.desc()).all()
-        finally:
-            session.close()
-    
-    @staticmethod
-    def get_by_id(alerte_id):
-        """Récupère une alerte par son ID"""
-        session = get_db()
-        try:
-            return session.query(Alerte).filter(Alerte.idAlerte == alerte_id).first()
-        finally:
-            session.close()
+            close_session()

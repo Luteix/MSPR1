@@ -15,7 +15,7 @@ def get_entrepots():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@entrepot_bp.route('/<string:entrepot_id>', methods=['GET'])
+@entrepot_bp.route('/<int:entrepot_id>', methods=['GET'])
 def get_entrepot(entrepot_id):
     """Détails entrepôt"""
     try:
@@ -26,7 +26,7 @@ def get_entrepot(entrepot_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@entrepot_bp.route('/<string:entrepot_id>/mesures', methods=['GET'])
+@entrepot_bp.route('/<int:entrepot_id>/mesures', methods=['GET'])
 def get_mesures_by_entrepot(entrepot_id):
     """
     Mesures température/humidité d'un entrepôt
@@ -35,7 +35,7 @@ def get_mesures_by_entrepot(entrepot_id):
       - name: entrepot_id
         in: path
         required: true
-        type: string
+        type: integer
       - name: periode
         in: query
         type: integer
@@ -53,7 +53,7 @@ def get_mesures_by_entrepot(entrepot_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@entrepot_bp.route('/<string:entrepot_id>/lots', methods=['GET'])
+@entrepot_bp.route('/<int:entrepot_id>/lots', methods=['GET'])
 def get_lots_by_entrepot(entrepot_id):
     """
     Lots entrepôt
@@ -62,7 +62,7 @@ def get_lots_by_entrepot(entrepot_id):
       - name: entrepot_id
         in: path
         required: true
-        type: string
+        type: integer
     responses:
       200:
         description: OK
@@ -75,7 +75,7 @@ def get_lots_by_entrepot(entrepot_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@entrepot_bp.route('/<string:entrepot_id>/lots', methods=['POST'])
+@entrepot_bp.route('/<int:entrepot_id>/lots', methods=['POST'])
 def create_lot_in_entrepot(entrepot_id):
     """
     Crée un nouveau lot dans un entrepôt
@@ -84,7 +84,7 @@ def create_lot_in_entrepot(entrepot_id):
       - name: entrepot_id
         in: path
         required: true
-        type: string
+        type: integer
       - name: body
         in: body
         required: true
@@ -149,7 +149,7 @@ def create_entrepot():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@entrepot_bp.route('/<string:entrepot_id>', methods=['PUT'])
+@entrepot_bp.route('/<int:entrepot_id>', methods=['PUT'])
 def update_entrepot(entrepot_id):
     """
     Mesures entrepôt
@@ -158,7 +158,7 @@ def update_entrepot(entrepot_id):
       - name: entrepot_id
         in: path
         required: true
-        type: string
+        type: integer
       - name: body
         in: body
         required: true
@@ -181,7 +181,7 @@ def update_entrepot(entrepot_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@entrepot_bp.route('/<string:entrepot_id>', methods=['DELETE'])
+@entrepot_bp.route('/<int:entrepot_id>', methods=['DELETE'])
 def delete_entrepot(entrepot_id):
     """
     Supprime un entrepôt
@@ -190,7 +190,7 @@ def delete_entrepot(entrepot_id):
       - name: entrepot_id
         in: path
         required: true
-        type: string
+        type: integer
     responses:
       200:
         description: Entrepôt supprimé

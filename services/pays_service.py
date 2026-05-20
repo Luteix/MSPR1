@@ -4,7 +4,7 @@ Services pour la gestion des pays
 Opérations CRUD et requêtes complexes pour les pays.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func, and_
 from models import Pays, Exploitation, Entrepot, LotGrains, Mesure, StatutLot
@@ -59,14 +59,14 @@ class PaysService:
                 lots_perimes = session.query(LotGrains).join(Entrepot).filter(
                     and_(
                         Entrepot.idExploitation == exp.idExploitation,
-                        LotGrains.statut == StatutLot.PERIME
+                        LotGrains.statut == StatutLot.PERIME.value
                     )
                 ).count()
                 
                 lots_alerte = session.query(LotGrains).join(Entrepot).filter(
                     and_(
                         Entrepot.idExploitation == exp.idExploitation,
-                        LotGrains.statut == StatutLot.EN_ALERTE
+                        LotGrains.statut == StatutLot.EN_ALERTE.value
                     )
                 ).count()
                 
@@ -98,7 +98,7 @@ class PaysService:
         """Historique des températures moyennes par jour"""
         session = get_db()
         try:
-            date_debut = datetime.utcnow() - timedelta(days=days)
+            date_debut = datetime.now(UTC) - timedelta(days=days)
             
             # Récupérer les mesures des entrepôts du pays
             mesures = session.query(
