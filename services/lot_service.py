@@ -75,14 +75,33 @@ class LotService:
     @staticmethod
     def get_alertes_by_lot(lot_id):
         """
-        Récupère l'historique des alertes liées à un lot
+        Récupère l'historique des alertes pour un lot donné.
+        Une alerte est liée à une mesure. La recherche se base sur les mesures
+        prises dans l'entrepôt du lot pendant sa période de stockage.
         """
         session = get_db()
         try:
-            alertes = session.query(Alerte).filter(
-                Alerte.idLotGrains == lot_id
-            ).order_by(Alerte.dateAlerte.desc()).all()
-            
+            # 1. Récupérer le lot pour obtenir l'entrepôt et les dates de stockage/sortie
+            lot = session.query(LotGrains).filter(LotGrains.idLotGrains == lot_id).first()
+            if not lot or not lot.datSto:
+                return []  # Pas de lot ou pas de date de stockage, donc pas d'alertes
+
+            # 2. Construire la requête pour trouver les alertes
+            # On joint Alerte -> Mesure pour filtrer par entrepôt et date
+            query = session.query(Alerte).join(Mesure).filter(
+                Mesure.idEntrepot == lot.idEntrepot,
+                Mesure.datMesure >= lot.datSto
+            )
+
+            # 3. Si le lot a une date de sortie, on limite la recherche à cette période
+            if lot.datSortie:
+                query = query.filter(Mesure.datMesure <= lot.datSortie)
+
+            # 4. Exécuter la requête en chargeant les mesures associées et en triant
+            alertes = query.options(
+                joinedload(Alerte.mesure)
+            ).order_by(Mesure.datMesure.desc()).all()
+
             return [alerte.to_dict() for alerte in alertes]
         except Exception as e:
             rollback_session()

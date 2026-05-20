@@ -342,6 +342,7 @@ class Mesure(Base):
     
     # Relations
     entrepot = relationship("Entrepot", back_populates="mesures")  # Plusieurs-à-un
+    alerte = relationship("Alerte", back_populates="mesure", uselist=False, cascade="all, delete-orphan")
     
     def to_dict(self):
         """
@@ -378,11 +379,18 @@ class Alerte(Base):
     # Clé étrangère vers la mesure (seule colonne existante dans la BDD)
     idMesure = Column(Integer, ForeignKey('mesures.idMesure'), nullable=False, unique=True)
     
+    # Relation pour accéder facilement à la mesure associée
+    mesure = relationship("Mesure", back_populates="alerte")
+    
     def to_dict(self):
-        """Convertit l'objet Alerte en dictionnaire"""
+        """
+        Convertit l'objet Alerte en dictionnaire, en incluant
+        les détails de la mesure qui l'a déclenchée.
+        """
         return {
             'idAlerte': self.idAlerte,
-            'idMesure': self.idMesure
+            'idMesure': self.idMesure,
+            'mesure': self.mesure.to_dict() if self.mesure else None
         }
 
 
