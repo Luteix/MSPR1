@@ -20,6 +20,15 @@ werkzeug==2.3.7
 # Monitoring et logging
 gunicorn==21.2.0
 
-
 # Pour MySQL
 PyMySQL==1.1.0
+
+# Client MySQL
+mysqlclient
+
+# Pour Swagger avec Flask
+flasgger==0.9.7.1
+
+# Libraririe qui permet d'utiliser l'Authentification sécurisée "caching_sha2_password" par défaut dans MySQL 8.0
+# PyMySQL ne peut pas executer cela seul il faut la lib cryptography
+cryptography
