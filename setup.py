@@ -11,9 +11,12 @@ UTILITÉ: Script d'installation automatique pour nouveaux environnements
 
 import os
 import sys
+import re
 import secrets
 import shutil
 import subprocess
+
+import bcrypt
 
 # Import pymysql pour l'exécution des scripts SQL
 try:
@@ -239,13 +242,37 @@ def setup_database(auto_mode=False):
     
     # Exécute les scripts SQL via Python (pas besoin de commande mysql externe)
     try:
+        def hash_seed_passwords(sql_content):
+            """Hash les mots de passe clairs des utilisateurs dans kawa_seed.sql."""
+            def hash_tuple(match):
+                tuple_text = match.group(0)
+                password = match.group(1)
+                if password.startswith('$2'):
+                    return tuple_text
+                hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(rounds=12)).decode('utf-8')
+                return tuple_text.replace(f"'{password}'", f"'{hashed}'", 1)
+
+            insert_block_pattern = re.compile(r'(INSERT INTO Utilisateurs[\s\S]*?;)', re.IGNORECASE)
+            tuple_pattern = re.compile(
+                r"\(\s*\d+\s*,\s*'[^']*'\s*,\s*'[^']*'\s*,\s*'[^']*'\s*,\s*'([^']*)'\s*,\s*\d+\s*,\s*\d+\s*\)",
+                re.IGNORECASE
+            )
+
+            def replace_block(match):
+                block = match.group(1)
+                return tuple_pattern.sub(hash_tuple, block)
+
+            return insert_block_pattern.sub(replace_block, sql_content)
+
         def execute_sql_file(filepath, db_host, db_port, db_user, db_password, db_name=None, strict=False):
             """Exécute un fichier SQL via pymysql avec support multi-statements"""
             with open(filepath, 'r', encoding='utf-8') as f:
                 sql_content = f.read()
+
+            if os.path.basename(filepath).lower() == 'kawa_seed.sql':
+                sql_content = hash_seed_passwords(sql_content)
             
             # Nettoie le SQL : enlève CREATE DATABASE et USE qui posent problème avec MULTI_STATEMENTS
-            import re
             # Supprime CREATE DATABASE ...
             sql_content = re.sub(r'CREATE DATABASE\s+\w+\s*;?', '', sql_content, flags=re.IGNORECASE)
             # Supprime USE ...
