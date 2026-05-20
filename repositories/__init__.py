@@ -1,1 +1,0 @@
-# Ce fichier permet à Python de considérer le dossier "repositories" comme un package.

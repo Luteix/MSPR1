@@ -1,49 +1,43 @@
-"""Repository pour les mesures - Couche d'accès aux données"""
+"""Repository pour les mesures - Couche BDD"""
 
-from sqlalchemy.orm import joinedload
-from models import Mesure, Entrepot, Exploitation, Pays
-from database import get_db, commit_session, rollback_session, close_session
+from database import get_db, commit_session, rollback_session
+from models import Mesure
+from sqlalchemy import text
+from datetime import datetime
 
 class MesureRepository:
+    """Gestion des opérations BDD pour les mesures"""
+    
     @staticmethod
-    def create(data):
-        """Crée une nouvelle mesure en base de données."""
+    def create(mesure_data):
+        """Crée une nouvelle mesure"""
         session = get_db()
         try:
-            mesure = Mesure(**data)
+            # Gestion de l'auto-incrémentation manuelle si la BDD ne l'a pas configurée
+            if 'idMesure' not in mesure_data:
+                # Récupérer le dernier ID et incrémenter
+                last_mesure = session.query(Mesure).order_by(Mesure.idMesure.desc()).first()
+                next_id = (last_mesure.idMesure + 1) if last_mesure else 1
+                mesure_data['idMesure'] = next_id
+            
+            mesure = Mesure(**mesure_data)
             session.add(mesure)
-            commit_session()
-            session.refresh(mesure) # Pour obtenir l'ID auto-généré
+            session.flush()
+            session.commit()
+            # Rafraîchir l'objet pour éviter les problèmes de session
+            session.refresh(mesure)
+            # Détacher l'objet de la session avant de la fermer
+            session.expunge(mesure)
             return mesure
         except Exception as e:
-            rollback_session()
+            session.rollback()
             raise e
         finally:
-            close_session()
-
-    @staticmethod
-    def get_seuils_entrepot(entrepot_id):
-        """Récupère les seuils (température/humidité) d'un entrepôt via son pays."""
-        session = get_db()
-        try:
-            # Les seuils sont définis au niveau du pays de l'exploitation de l'entrepôt
-            entrepot = session.query(Entrepot).options(
-                joinedload(Entrepot.exploitation).joinedload(Exploitation.pays)
-            ).filter(Entrepot.idEntrepot == entrepot_id).first()
-            
-            if entrepot and entrepot.exploitation and entrepot.exploitation.pays:
-                # Le service s'attend à un objet avec les attributs temperatureMin/Max, etc.
-                # Le modèle Pays correspond parfaitement.
-                return entrepot.exploitation.pays
-            return None
-        except Exception as e:
-            raise e
-        finally:
-            close_session()
-
+            session.close()
+    
     @staticmethod
     def get_by_entrepot(entrepot_id, limit=100, from_date=None):
-        """Récupère les mesures pour un entrepôt donné."""
+        """Récupère les mesures d'un entrepôt"""
         session = get_db()
         try:
             query = session.query(Mesure).filter(Mesure.idEntrepot == entrepot_id)
@@ -51,20 +45,31 @@ class MesureRepository:
             if from_date:
                 query = query.filter(Mesure.datMesure >= from_date)
             
-            mesures = query.order_by(Mesure.datMesure.desc()).limit(limit).all()
-            return mesures
-        except Exception as e:
-            raise e
+            return query.order_by(Mesure.datMesure.desc()).limit(limit).all()
         finally:
-            close_session()
-
+            session.close()
+    
     @staticmethod
     def get_by_id(mesure_id):
-        """Récupère une mesure par son ID."""
+        """Récupère une mesure par son ID"""
         session = get_db()
         try:
             return session.query(Mesure).filter(Mesure.idMesure == mesure_id).first()
-        except Exception as e:
-            raise e
         finally:
-            close_session()
+            session.close()
+    
+    @staticmethod
+    def get_seuils_entrepot(entrepot_id):
+        """Récupère les seuils de température/humidité pour un entrepôt"""
+        session = get_db()
+        try:
+            result = session.execute(text("""
+                SELECT p.temperatureMin, p.temperatureMax, p.humiditeMin, p.humiditeMax
+                FROM entrepot e
+                JOIN exploitation ex ON e.idExploitation = ex.idExploitation
+                JOIN pays p ON ex.idPays = p.idPays
+                WHERE e.idEntrepot = :idEntrepot
+            """), {"idEntrepot": entrepot_id}).fetchone()
+            return result
+        finally:
+            session.close()

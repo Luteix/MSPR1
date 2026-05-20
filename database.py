@@ -11,7 +11,8 @@ UTILITÉ: Gestion de la connexion à la base de données MySQL
 import os
 import logging
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import declarative_base, sessionmaker, scoped_session
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, scoped_session
 from dotenv import load_dotenv
 
 # Chargement des variables d'environnement

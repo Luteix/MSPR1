@@ -1,6 +1,6 @@
 """Service pour les mesures - Couche Domaine"""
 
-from datetime import datetime, UTC
+from datetime import datetime
 from models import Alerte, TypeAlerte, StatutAlerte
 from repositories.mesure_repository import MesureRepository
 from repositories.alerte_repository import AlerteRepository
@@ -56,7 +56,7 @@ class MesureService:
             'idEntrepot': data['idEntrepot'],
             'temperature': float(data['temperature']),
             'humidite': float(data['humidite']),
-            'datMesure': datetime.fromisoformat(data['datMesure'].replace('Z', '+00:00')) if 'datMesure' in data else datetime.now(UTC)
+            'datMesure': datetime.fromisoformat(data['datMesure'].replace('Z', '+00:00')) if 'datMesure' in data else datetime.utcnow()
         }
         
         # Création de la mesure
