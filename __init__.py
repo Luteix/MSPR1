@@ -1,0 +1,1 @@
+# Ce fichier permet à Python de considérer le dossier racine comme un package.

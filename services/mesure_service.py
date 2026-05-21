@@ -73,15 +73,10 @@ class MesureService:
         seuils = MesureRepository.get_seuils_entrepot(mesure.idEntrepot)
         
         if seuils:
-            # Alerte température
-            if mesure.temperature < seuils.temperatureMin or mesure.temperature > seuils.temperatureMax:
-                alerte_data = {
-                    'idMesure': mesure.idMesure
-                }
-                AlerteRepository.create(alerte_data)
+            temp_anormale = mesure.temperature < seuils.temperatureMin or mesure.temperature > seuils.temperatureMax
+            hum_anormale = mesure.humidite < seuils.humiditeMin or mesure.humidite > seuils.humiditeMax
             
-            # Alerte humidité
-            if mesure.humidite < seuils.humiditeMin or mesure.humidite > seuils.humiditeMax:
+            if temp_anormale or hum_anormale:
                 alerte_data = {
                     'idMesure': mesure.idMesure
                 }

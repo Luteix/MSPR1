@@ -12,10 +12,11 @@ Modèles: Pays, Exploitation, Entrepot, LotGrains, Mesure, Alerte, Utilisateur
 
 from datetime import datetime
 from enum import Enum
-from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey, Enum as SQLEnum
+from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey, Enum as SQLEnum, event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import uuid
+import bcrypt
 
 # Base déclarative pour tous les modèles SQLAlchemy
 Base = declarative_base()
@@ -153,13 +154,14 @@ class Utilisateur(Base):
     # Clé étrangère vers l'exploitation (adaptée à la BDD : int(11))
     idExploitation = Column(Integer, ForeignKey('exploitations.idExploitation'), nullable=False)
     
+    # Clé étrangère vers le poste (adaptée à la BDD : int(11))
+    idPoste = Column(Integer, nullable=True)  # ID du poste (nullable si non attribué)
+    
     # Informations personnelles
     nom = Column(String(50), nullable=False)       # Nom de famille
     prenom = Column(String(50), nullable=False)   # Prénom
     mail = Column(String(255), nullable=False, unique=True)  # Email unique
     mdp = Column(String(255), nullable=False)    # Mot de passe (hashé ou en clair)
-    
-    # Note: pas de colonne idPoste dans la BDD actuelle
     
     # Relations
     exploitation = relationship("Exploitation", back_populates="utilisateurs")  # Plusieurs-à-un
@@ -174,6 +176,7 @@ class Utilisateur(Base):
         return {
             'idUtilisateur': self.idUtilisateur,
             'idExploitation': self.idExploitation,
+            'idPoste': self.idPoste,
             'nom': self.nom,
             'prenom': self.prenom,
             'mail': self.mail
@@ -339,6 +342,7 @@ class Mesure(Base):
     
     # Relations
     entrepot = relationship("Entrepot", back_populates="mesures")  # Plusieurs-à-un
+    alerte = relationship("Alerte", back_populates="mesure", uselist=False, cascade="all, delete-orphan")
     
     def to_dict(self):
         """
@@ -375,9 +379,46 @@ class Alerte(Base):
     # Clé étrangère vers la mesure (seule colonne existante dans la BDD)
     idMesure = Column(Integer, ForeignKey('mesures.idMesure'), nullable=False, unique=True)
     
+    # Relation pour accéder facilement à la mesure associée
+    mesure = relationship("Mesure", back_populates="alerte")
+    
     def to_dict(self):
-        """Convertit l'objet Alerte en dictionnaire"""
+        """
+        Convertit l'objet Alerte en dictionnaire, en incluant
+        les détails de la mesure qui l'a déclenchée.
+        """
         return {
             'idAlerte': self.idAlerte,
-            'idMesure': self.idMesure
+            'idMesure': self.idMesure,
+            'mesure': self.mesure.to_dict() if self.mesure else None
         }
+
+
+# =============================================================================
+# LISTENERS SQLAlchemy - HACHAGE AUTOMATIQUE DES MOTS DE PASSE
+# =============================================================================
+
+def hash_password_before_insert_update(mapper, connection, target):
+    """
+    Listener SQLAlchemy qui hashé automatiquement le mot de passe avant l'insertion
+    ou la mise à jour d'un utilisateur.
+    
+    Cela garantit que aucun mot de passe en clair ne sera jamais sauvegardé en BDD,
+    même si quelqu'un crée/modifie un utilisateur en contournant l'API.
+    
+    Args:
+        mapper: Mapper SQLAlchemy
+        connection: Connection à la BDD
+        target: Objet Utilisateur en cours d'insertion/mise à jour
+    """
+    # Vérifie si le mot de passe a été modifié et n'est pas déjà hashé
+    if target.mdp and not target.mdp.startswith('$2'):
+        # Hash le mot de passe si ce n'est pas déjà un hash bcrypt
+        salt = bcrypt.gensalt(rounds=12)  # 12 rounds = bon équilibre
+        hashed = bcrypt.hashpw(target.mdp.encode('utf-8'), salt)
+        target.mdp = hashed.decode('utf-8')
+
+
+# Enregistre le listener pour hasher automatiquement les mots de passe
+event.listen(Utilisateur, 'before_insert', hash_password_before_insert_update)
+event.listen(Utilisateur, 'before_update', hash_password_before_insert_update)
