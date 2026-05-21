@@ -2,32 +2,24 @@ FROM debian:12-slim
 
 WORKDIR /app
 
-# Installation d'un environement python et de la librairie pip
+# 1. Installation de Python, pip et de l'outil ping (iputils-ping)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
-    python3-venv \
-    default-libmysqlclient-dev \
-    pkg-config \
-    build-essential \
+    iputils-ping \
  && rm -rf /var/lib/apt/lists/*
 
-#Installation des dépendances pour MySQL
-RUN apt-get update && apt-get install -y \ 
-    default-libmysqlclient-dev \
-    pkg-config \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copie des fichiers de dépendances python
+# 2. Copie et installation des dépendances Python
 COPY requirements.txt .
 
-#Installation de la liste des dépendances utiles pour le porjet
-RUN pip3 install --no-cache-dir -r requirements.txt
+# Utilisation de --break-system-packages pour autoriser pip à installer les paquets
+# directement dans cet environnement Debian isolé.
+RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 
-# Copie du reste du code
+# 3. Copie du reste du code
 COPY . .
 
-# Exposition du port Flask
+# 4. Configuration réseau et lancement
 EXPOSE 5000
 
 CMD ["python3", "app.py"]
