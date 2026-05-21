@@ -1,0 +1,46 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: futurekawaDB
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=futurekawa
+
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - futurekawa
+
+  web:
+    build: .
+    container_name: futurekawapp
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=secret
+      - DB_NAME=futurekawa
+        # Clé privée du JSON Web Token
+      - JWT_SECRET_KEY=c0d46ff96e5372e4ea70aed573d1dba656b2564d340d9ba3ea33cbf4afe541b6
+      # Durée de validité du token (en heures) 
+      - JWT_ACCESS_TOKEN_EXPIRES=24
+      # Algorithme de signature du hash
+      - JWT_ALGORITHM="HS256"
+      # Complexité du hash bcrypt (salt)
+      - BCRYPT_ROUNDS=12
+    depends_on:
+      - db
+    networks:
+      - futurekawa
+
+volumes:
+  db_data:
+
+networks:
+  futurekawa:
+    driver: bridge
