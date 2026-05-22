@@ -169,7 +169,7 @@ def run_setup_direct():
     print("="*50 + "\n")
     
     # Import ici pour éviter les imports circulaires
-    from setup import setup_config, setup_env, check_dependencies, setup_database
+    from install import setup_config, setup_env, check_dependencies, setup_database
     
     # Setup config
     if not setup_config():

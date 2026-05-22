@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: futurekawa_services
+Version: 1.0
+Summary: A useful module
+Author: Man Foo
+Author-email: foomail@foo.example
+Requires-Dist: requirements.txt
+Dynamic: author
+Dynamic: author-email
+Dynamic: requires-dist
+Dynamic: summary
