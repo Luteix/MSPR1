@@ -26,6 +26,7 @@ def get_dashboard_summary():
         return jsonify({'error': str(e)}), 500
 
 @alerte_bp.route('/alertes/recentes', methods=['GET'])
+@alerte_bp.route('/alertes/recent', methods=['GET'])
 def get_recent_alertes():
     """
     Alertes récentes
@@ -43,7 +44,7 @@ def get_recent_alertes():
     """
     try:
         limit = request.args.get('limit', 5, type=int)
-        alertes = AlerteService.get_recent_alertes(limit)
+        alertes = DashboardService.get_recent_alertes(limit)
         return jsonify(alertes), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -102,7 +103,7 @@ def update_alerte_statut(alerte_id):
         if 'statut' not in data:
             return jsonify({'error': 'Champ requis: statut'}), 400
         
-        alerte = AlerteService.update_alerte_statut(alerte_id, data['statut'])
+        alerte = DashboardService.update_alerte_statut(alerte_id, data['statut'])
         
         if not alerte:
             return jsonify({'error': 'Alerte non trouvée'}), 404
