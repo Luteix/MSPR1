@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func, and_, or_
 from models import LotGrains, Entrepot, Exploitation, Pays, Mesure, Alerte, StatutLot, TypeAlerte
@@ -153,20 +153,17 @@ class LotService:
             for lot in lots:
                 ancien_statut = lot.statut
                 nouveau_statut = LotService._calculer_statut_lot(lot)
+                nouveau_statut_valeur = nouveau_statut.value if isinstance(nouveau_statut, StatutLot) else nouveau_statut
                 
-                if ancien_statut != nouveau_statut:
-                    lot.statut = nouveau_statut
+                if ancien_statut != nouveau_statut_valeur:
+                    lot.statut = nouveau_statut_valeur
                     
                     # Créer une alerte si le lot devient périmé
                     if nouveau_statut == StatutLot.PERIME:
-                        alerte = Alerte(
-                            idEntrepot=lot.idEntrepot,
-                            idLotGrains=lot.idLotGrains,
-                            type=TypeAlerte.LOT_PERIME,
-                            dateAlerte=datetime.utcnow(),
-                            statut="en cours"
-                        )
-                        session.add(alerte)
+                        id_mesure = getattr(lot, 'idMesure', None)
+                        if isinstance(id_mesure, int):
+                            alerte = Alerte(idMesure=id_mesure)
+                            session.add(alerte)
             
             commit_session()
         except Exception as e:
@@ -176,13 +173,23 @@ class LotService:
             session.close()
     
     @staticmethod
+    def _normaliser_datetime_utc(value):
+        """Normalise les dates en UTC naïves pour les comparaisons."""
+        if value is None:
+            return None
+        if value.tzinfo is not None:
+            return value.astimezone(timezone.utc).replace(tzinfo=None)
+        return value
+
+    @staticmethod
     def _calculer_statut_lot(lot):
         """
         Calcule le statut d'un lot selon les règles métier
         """
         # Vérifier si le lot est périmé (> 365 jours)
         if lot.datSto:
-            age_jours = (datetime.utcnow() - lot.datSto).days
+            dat_sto = LotService._normaliser_datetime_utc(lot.datSto)
+            age_jours = (datetime.utcnow() - dat_sto).days
             if age_jours > 365:
                 return StatutLot.PERIME
             
