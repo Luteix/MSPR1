@@ -1,0 +1,66 @@
+name: mspr_bloc_4
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: futurekawaDB
+    command: --lower_case_table_names=1
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=futurekawa
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./futurekawa.sql:/docker-entrypoint-initdb.d/1_structure.sql
+      - ./kawa_seed.sql:/docker-entrypoint-initdb.d/2_seed.sql
+    networks:
+      - futurekawa
+
+  web:
+    build: .
+    container_name: futurekawapp
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=secret
+      - DB_NAME=futurekawa
+      # Clé privée du JSON Web Token
+      - JWT_SECRET_KEY=c0d46ff96e5372e4ea70aed573d1dba656b2564d340d9ba3ea33cbf4afe541b6
+      # Durée de validité du token (en heures) 
+      - JWT_ACCESS_TOKEN_EXPIRES=24
+      # Algorithme de signature du hash
+      - JWT_ALGORITHM="HS256"
+      # Complexité du hash bcrypt (salt)
+      - BCRYPT_ROUNDS=12
+    depends_on:
+      - db
+    networks:
+      - futurekawa
+
+  # ==========================================
+  # AJOUT : Le service Front-end (Nginx + Vite)
+  # ==========================================
+  front:
+    build:
+      context: ./futureKawaFront  # Chemin vers le dossier qui contient ton Dockerfile Front
+      dockerfile: Dockerfile
+    container_name: futurekawafront
+    restart: always
+    ports:
+      - "9090:80"                  # On utilise le port 9090 qui fonctionne bien
+    depends_on:
+      - web                       # Attend que l'API soit prête
+    networks:
+      - futurekawa
+
+volumes:
+  db_data:
+
+networks:
+  futurekawa:
+    driver: bridge
