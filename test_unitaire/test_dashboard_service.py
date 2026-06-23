@@ -22,14 +22,21 @@ def test_get_dashboard_summary_success(mock_get_db):
 
     # Cr├®ation des mocks persistants hors de la fonction side_effect
     lot_query_mock = MagicMock()
-    lot_query_mock.count.return_value = 10
     lot_filter_mock = MagicMock()
-    lot_filter_mock.count.side_effect = [2, 1] # alerte, perime
+    lot_filter_mock.count.side_effect = [10, 1] # stockés, périmés
+    lot_filter_mock.filter.return_value = lot_filter_mock
     lot_query_mock.filter.return_value = lot_filter_mock
     
     lot_join_filter_mock = MagicMock()
-    lot_join_filter_mock.count.side_effect = [5, 2] # nb_lots, lots_en_alerte for pays 1
-    lot_query_mock.join.return_value.join.return_value.filter.return_value = lot_join_filter_mock
+    lot_join_filter_mock.count.side_effect = [5] # nb_lots for pays 1
+    lot_join_filter_mock.filter.return_value = lot_join_filter_mock
+    lot_join_filter_mock.distinct.return_value.count.side_effect = [2, 2]
+    join_once = lot_query_mock.join.return_value
+    join_twice = join_once.join.return_value
+    join_three = join_twice.join.return_value
+    join_twice.filter.return_value = lot_join_filter_mock
+    join_three.filter.return_value = lot_join_filter_mock
+    join_three.join.return_value.filter.return_value = lot_join_filter_mock
 
     entrepot_query_mock = MagicMock()
     entrepot_query_mock.count.return_value = 4
@@ -87,6 +94,73 @@ def test_get_dashboard_summary_success(mock_get_db):
     assert country_summary['lotsEnAlerte'] == 2
     assert country_summary['derniereMesure'] is not None
 
+    mock_session.close.assert_called_once()
+
+
+@patch('services.dashboard_service.get_db')
+def test_get_dashboard_summary_filters_only_active_lots(mock_get_db):
+    """
+    SCÉNARIO: On demande le résumé du dashboard.
+    QUAND: des lots ont déjà une date de sortie.
+    ALORS: seuls les lots actifs (non sortis) doivent être comptés.
+    """
+    mock_session = MagicMock()
+    mock_get_db.return_value = mock_session
+
+    lot_query_mock = MagicMock()
+    lot_filter_mock = MagicMock()
+    lot_filter_mock.count.side_effect = [7, 1]
+    lot_filter_mock.filter.return_value = lot_filter_mock
+    lot_query_mock.filter.return_value = lot_filter_mock
+
+    lot_join_filter_mock = MagicMock()
+    lot_join_filter_mock.count.side_effect = [4]
+    lot_join_filter_mock.filter.return_value = lot_join_filter_mock
+    lot_join_filter_mock.distinct.return_value.count.side_effect = [1, 1]
+    join_once = lot_query_mock.join.return_value
+    join_twice = join_once.join.return_value
+    join_three = join_twice.join.return_value
+    join_twice.filter.return_value = lot_join_filter_mock
+    join_three.filter.return_value = lot_join_filter_mock
+    join_three.join.return_value.filter.return_value = lot_join_filter_mock
+
+    entrepot_query_mock = MagicMock()
+    entrepot_query_mock.count.return_value = 0
+
+    pays_query_mock = MagicMock()
+    mock_pays = MagicMock()
+    mock_pays.idPays = 1
+    mock_pays.nom = 'Testland'
+    pays_query_mock.all.return_value = [mock_pays]
+
+    exp_query_mock = MagicMock()
+    exp_query_mock.filter.return_value.count.return_value = 0
+
+    scalar_query_mock = MagicMock()
+    scalar_mock = MagicMock()
+    scalar_mock.scalar.return_value = datetime(2024, 5, 21)
+    scalar_query_mock.join.return_value.join.return_value.filter.return_value = scalar_mock
+
+    def mock_query_side_effect(model):
+        if model is LotGrains:
+            return lot_query_mock
+        elif model is Entrepot:
+            return entrepot_query_mock
+        elif model is Pays:
+            return pays_query_mock
+        elif model is Exploitation:
+            return exp_query_mock
+        else:
+            return scalar_query_mock
+
+    mock_session.query.side_effect = mock_query_side_effect
+
+    result = DashboardService.get_dashboard_summary()
+
+    assert result['metrics']['lotsStockes'] == 7
+    assert result['metrics']['lotsAlerte'] == 1
+    assert result['metrics']['lotsPerimes'] == 1
+    assert any('datSortie' in str(call.args[0]) for call in lot_query_mock.filter.call_args_list)
     mock_session.close.assert_called_once()
 
 

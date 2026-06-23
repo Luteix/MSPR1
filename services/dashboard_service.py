@@ -14,13 +14,26 @@ class DashboardService:
         """
         session = get_db()
         try:
+            lots_actifs = session.query(LotGrains).filter(
+                LotGrains.datSortie.is_(None)
+            )
+
             # Métriques globales
-            lots_stockes = session.query(LotGrains).count()
-            lots_alerte = session.query(LotGrains).filter(
-                LotGrains.statut == StatutLot.EN_ALERTE
-            ).count()
+            lots_stockes = lots_actifs.count()
+            lots_alerte = session.query(LotGrains).join(Entrepot).join(
+                Mesure, Mesure.idEntrepot == Entrepot.idEntrepot
+            ).join(
+                Alerte, Alerte.idMesure == Mesure.idMesure
+            ).filter(
+                LotGrains.datSortie.is_(None)
+            ).distinct(LotGrains.idLotGrains).count()
+            perime_threshold = datetime.utcnow() - timedelta(days=365)
             lots_perimes = session.query(LotGrains).filter(
-                LotGrains.statut == StatutLot.PERIME
+                LotGrains.datSortie.is_(None),
+                or_(
+                    LotGrains.statut == StatutLot.PERIME.value,
+                    LotGrains.datSto <= perime_threshold
+                )
             ).count()
             entrepots_actifs = session.query(Entrepot).count()
             
@@ -46,18 +59,25 @@ class DashboardService:
                     Exploitation.idPays == pays.idPays
                 ).count()
                 
-                # Nombre de lots
+                # Nombre de lots actuellement stockés
                 nb_lots = session.query(LotGrains).join(Entrepot).join(Exploitation).filter(
-                    Exploitation.idPays == pays.idPays
-                ).count()
-                
-                # Lots en alerte
-                lots_en_alerte = session.query(LotGrains).join(Entrepot).join(Exploitation).filter(
                     and_(
                         Exploitation.idPays == pays.idPays,
-                        LotGrains.statut == StatutLot.EN_ALERTE
+                        LotGrains.datSortie.is_(None)
                     )
                 ).count()
+                
+                # Lots en alerte actuellement stockés
+                lots_en_alerte = session.query(LotGrains).join(Entrepot).join(Exploitation).join(
+                    Mesure, Mesure.idEntrepot == Entrepot.idEntrepot
+                ).join(
+                    Alerte, Alerte.idMesure == Mesure.idMesure
+                ).filter(
+                    and_(
+                        Exploitation.idPays == pays.idPays,
+                        LotGrains.datSortie.is_(None)
+                    )
+                ).distinct(LotGrains.idLotGrains).count()
                 
                 # Dernière mesure
                 derniere_mesure = session.query(func.max(Mesure.datMesure)).join(Entrepot).join(Exploitation).filter(
