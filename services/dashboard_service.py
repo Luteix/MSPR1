@@ -30,10 +30,8 @@ class DashboardService:
             perime_threshold = datetime.utcnow() - timedelta(days=365)
             lots_perimes = session.query(LotGrains).filter(
                 LotGrains.datSortie.is_(None),
-                or_(
-                    LotGrains.statut == StatutLot.PERIME.value,
-                    LotGrains.datSto <= perime_threshold
-                )
+                LotGrains.statut == 'Stocké',
+                LotGrains.datSto <= perime_threshold
             ).count()
             entrepots_actifs = session.query(Entrepot).count()
             
