@@ -126,8 +126,11 @@ class LotService:
             if 'datSortie' in data:
                 if data['datSortie']:
                     lot.datSortie = datetime.fromisoformat(data['datSortie'].replace('Z', '+00:00')) if isinstance(data['datSortie'], str) else data['datSortie']
+                    lot.statut = StatutLot.VENDU.value
                 else:
                     lot.datSortie = None
+                    nouveau_statut = LotService._calculer_statut_lot(lot, session)
+                    lot.statut = nouveau_statut.value if isinstance(nouveau_statut, StatutLot) else nouveau_statut
             
             commit_session()
             return lot.to_dict()
@@ -152,7 +155,7 @@ class LotService:
             
             for lot in lots:
                 ancien_statut = lot.statut
-                nouveau_statut = LotService._calculer_statut_lot(lot)
+                nouveau_statut = LotService._calculer_statut_lot(lot, session)
                 nouveau_statut_valeur = nouveau_statut.value if isinstance(nouveau_statut, StatutLot) else nouveau_statut
                 
                 if ancien_statut != nouveau_statut_valeur:
@@ -182,10 +185,14 @@ class LotService:
         return value
 
     @staticmethod
-    def _calculer_statut_lot(lot):
+    def _calculer_statut_lot(lot, session):
         """
         Calcule le statut d'un lot selon les règles métier
         """
+        # Un lot sorti du stock est considéré comme vendu
+        if lot.datSortie is not None:
+            return StatutLot.VENDU
+
         # Vérifier si le lot est périmé (> 365 jours)
         if lot.datSto:
             dat_sto = LotService._normaliser_datetime_utc(lot.datSto)

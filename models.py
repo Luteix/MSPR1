@@ -32,6 +32,7 @@ class StatutLot(Enum):
     CONFORME = "conforme"           # Lot dans les normes de stockage
     EN_ALERTE = "en alerte"         # Lot avec anomalies mineures
     PERIME = "périmé"               # Lot périmé, à détruire
+    VENDU = "vendu"                 # Lot vendu, sorti du stock
 
 class TypeAlerte(Enum):
     """

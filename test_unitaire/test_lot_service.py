@@ -108,6 +108,7 @@ def test_update_lot_success(mock_get_db, mock_commit_session):
     # --- ASSERT ---
     mock_commit_session.assert_called_once()
     assert result['datSortie'] == '2024-05-21T10:00:00+00:00'
+    assert mock_lot.statut == 'vendu'
     mock_session.close.assert_called_once()
 
 @patch('services.lot_service.get_db')
@@ -163,6 +164,7 @@ def test_update_lot_status_changes_status_to_perime(mock_get_db, mock_commit):
     mock_lot = MagicMock()
     mock_lot.statut = StatutLot.CONFORME.value
     mock_lot.datSto = datetime.now(UTC) - timedelta(days=400) # P├®rim├®
+    mock_lot.datSortie = None
     # Simuler la hi├®rarchie pour que la 2e partie de _calculer_statut_lot ne soit pas ex├®cut├®e
     mock_lot.entrepot.exploitation.pays = None
 
@@ -178,4 +180,31 @@ def test_update_lot_status_changes_status_to_perime(mock_get_db, mock_commit):
     # La session a ├®t├® commit
     mock_commit.assert_called_once()
     # La session a ├®t├® ferm├®e
+    mock_session.close.assert_called_once()
+
+@patch('services.lot_service.commit_session')
+@patch('services.lot_service.get_db')
+def test_update_lot_status_keeps_vendu(mock_get_db, mock_commit):
+    """
+    SCÉNARIO: Un lot vendu a une date de sortie.
+    QUAND: update_lot_status est appelée.
+    ALORS: Le statut reste 'vendu' et n'est pas recalculé.
+    """
+    # --- ARRANGE ---
+    mock_session = MagicMock()
+    mock_get_db.return_value = mock_session
+
+    mock_lot = MagicMock()
+    mock_lot.datSortie = datetime.now(UTC) - timedelta(days=10)
+    mock_lot.statut = StatutLot.EN_ALERTE.value
+    mock_lot.entrepot.exploitation.pays = None
+
+    mock_session.query.return_value.options.return_value.all.return_value = [mock_lot]
+
+    # --- ACT ---
+    LotService.update_lot_status()
+
+    # --- ASSERT ---
+    assert mock_lot.statut == StatutLot.VENDU.value
+    mock_commit.assert_called_once()
     mock_session.close.assert_called_once()
