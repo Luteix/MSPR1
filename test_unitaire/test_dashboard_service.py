@@ -204,6 +204,40 @@ def test_create_alerte_success(mock_create_alerte):
     mock_create_alerte.assert_called_once_with({'idMesure': 123})
     assert result['idAlerte'] == 1
 
+
+def test_alerte_to_dict_includes_entrepot_name():
+    mock_entrepot = MagicMock()
+    mock_entrepot.idEntrepot = 5
+    mock_entrepot.nom = 'Entrepôt Central'
+
+    mock_mesure = MagicMock()
+    mock_mesure.idMesure = 456
+    mock_mesure.idEntrepot = 5
+    mock_mesure.temperature = 25.0
+    mock_mesure.humidite = 60.0
+    mock_mesure.datMesure = datetime(2024, 1, 1)
+    mock_mesure.entrepot = mock_entrepot
+    mock_mesure.to_dict.return_value = {
+        'idMesure': 456,
+        'idEntrepot': 5,
+        'temperature': 25.0,
+        'humidite': 60.0,
+        'datMesure': '2024-01-01T00:00:00'
+    }
+
+    from models import Alerte
+    mock_alerte = Alerte()
+    mock_alerte.idAlerte = 1
+    mock_alerte.idMesure = 456
+    mock_alerte.mesure = mock_mesure
+
+    result = mock_alerte.to_dict()
+
+    assert result['idAlerte'] == 1
+    assert result['idMesure'] == 456
+    assert result['mesure']['idEntrepot'] == 5
+    assert result['entrepot'] == {'idEntrepot': 5, 'nom': 'Entrepôt Central'}
+
 @patch('services.dashboard_service.commit_session')
 @patch('services.dashboard_service.get_db')
 def test_update_alerte_statut_success(mock_get_db, mock_commit):

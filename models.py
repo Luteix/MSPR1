@@ -387,11 +387,17 @@ class Alerte(Base):
         Convertit l'objet Alerte en dictionnaire, en incluant
         les détails de la mesure qui l'a déclenchée.
         """
-        return {
+        result = {
             'idAlerte': self.idAlerte,
             'idMesure': self.idMesure,
             'mesure': self.mesure.to_dict() if self.mesure else None
         }
+        if self.mesure and self.mesure.entrepot:
+            result['entrepot'] = {
+                'idEntrepot': self.mesure.entrepot.idEntrepot,
+                'nom': self.mesure.entrepot.nom
+            }
+        return result
 
 
 # =============================================================================
