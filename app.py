@@ -9,7 +9,6 @@ UTILITÉ: Point d'entrée principal de l'API Flask
 
 Pour lancer: python app.py
 """
-
 import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
