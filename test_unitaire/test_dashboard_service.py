@@ -11,11 +11,9 @@ from models import LotGrains, Entrepot, Pays, Mesure, Alerte, StatutLot, Exploit
 
 @patch('services.dashboard_service.get_db')
 def test_get_dashboard_summary_success(mock_get_db):
-    """
-    SC├ëNARIO: On demande le r├®sum├® du dashboard.
-    QUAND: get_dashboard_summary est appel├®e.
-    ALORS: Elle doit retourner les m├®triques globales et le r├®sum├® par pays.
-    """
+    # SC├ëNARIO: On demande le r├®sum├® du dashboard.
+    # QUAND: get_dashboard_summary est appel├®e.
+    # ALORS: Elle doit retourner les m├®triques globales et le r├®sum├® par pays.
     # --- ARRANGE ---
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
@@ -99,11 +97,9 @@ def test_get_dashboard_summary_success(mock_get_db):
 
 @patch('services.dashboard_service.get_db')
 def test_get_dashboard_summary_filters_only_active_lots(mock_get_db):
-    """
-    SCÉNARIO: On demande le résumé du dashboard.
-    QUAND: des lots ont déjà une date de sortie.
-    ALORS: seuls les lots actifs (non sortis) doivent être comptés.
-    """
+    # SCÉNARIO: On demande le résumé du dashboard.
+    # QUAND: des lots ont déjà une date de sortie.
+    # ALORS: seuls les lots actifs (non sortis) doivent être comptés.
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
 
@@ -166,11 +162,9 @@ def test_get_dashboard_summary_filters_only_active_lots(mock_get_db):
 
 @patch('services.dashboard_service.DashboardRepository.get_alertes_with_hierarchy')
 def test_get_recent_alertes_success(mock_get_alertes):
-    """
-    SC├ëNARIO: On demande les alertes r├®centes.
-    QUAND: get_recent_alertes est appel├®e.
-    ALORS: Elle doit retourner une liste limit├®e d'alertes.
-    """
+    # SC├ëNARIO: On demande les alertes r├®centes.
+    # QUAND: get_recent_alertes est appel├®e.
+    # ALORS: Elle doit retourner une liste limit├®e d'alertes.
     # --- ARRANGE ---
     mock_alertes = [{'idAlerte': 5}, {'idAlerte': 4}, {'idAlerte': 3}, {'idAlerte': 2}]
     mock_get_alertes.return_value = mock_alertes
@@ -186,11 +180,9 @@ def test_get_recent_alertes_success(mock_get_alertes):
 
 @patch('services.dashboard_service.DashboardRepository.create_alerte')
 def test_create_alerte_success(mock_create_alerte):
-    """
-    SC├ëNARIO: On cr├®e une alerte avec des donn├®es valides.
-    QUAND: create_alerte est appel├®e.
-    ALORS: Elle doit appeler le repository et retourner l'alerte cr├®├®e.
-    """
+    # SC├ëNARIO: On cr├®e une alerte avec des donn├®es valides.
+    # QUAND: create_alerte est appel├®e.
+    # ALORS: Elle doit appeler le repository et retourner l'alerte cr├®├®e.
     # --- ARRANGE ---
     alerte_data = {'idMesure': 123}
     mock_alerte = MagicMock()
@@ -241,11 +233,9 @@ def test_alerte_to_dict_includes_entrepot_name():
 @patch('services.dashboard_service.commit_session')
 @patch('services.dashboard_service.get_db')
 def test_update_alerte_statut_success(mock_get_db, mock_commit):
-    """
-    SC├ëNARIO: On met ├á jour le statut d'une alerte existante.
-    QUAND: update_alerte_statut est appel├®e.
-    ALORS: La session doit ├¬tre commit├®e.
-    """
+    # SC├ëNARIO: On met ├á jour le statut d'une alerte existante.
+    # QUAND: update_alerte_statut est appel├®e.
+    # ALORS: La session doit ├¬tre commit├®e.
     # --- ARRANGE ---
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session

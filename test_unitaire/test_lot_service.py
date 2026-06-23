@@ -10,11 +10,9 @@ from models import StatutLot
 
 @patch('services.lot_service.get_db')
 def test_get_all_lots_success(mock_get_db):
-    """
-    SC├ëNARIO: On demande la liste de tous les lots.
-    QUAND: get_all_lots est appel├®e.
-    ALORS: Elle doit retourner la liste des lots existants.
-    """
+    # SCENARIO: On demande la liste de tous les lots.
+    # QUAND: get_all_lots est appelée.
+    # ALORS: Elle doit retourner la liste des lots existants.
     # --- ARRANGE ---
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
@@ -24,7 +22,7 @@ def test_get_all_lots_success(mock_get_db):
     mock_lot2 = MagicMock()
     mock_lot2.to_dict.return_value = {'idLotGrains': 2}
     
-    # Simuler la cha├«ne SQLAlchemy: session.query().options().order_by().all()
+    # Simuler la chaine SQLAlchemy: session.query().options().order_by().all()
     mock_session.query.return_value.options.return_value.order_by.return_value.all.return_value = [mock_lot1, mock_lot2]
 
     # --- ACT ---
@@ -39,11 +37,9 @@ def test_get_all_lots_success(mock_get_db):
 
 @patch('services.lot_service.get_db')
 def test_get_lot_by_id_success(mock_get_db):
-    """
-    SC├ëNARIO: On demande un lot sp├®cifique avec un ID valide.
-    QUAND: get_lot_by_id est appel├®e.
-    ALORS: Elle doit retourner le lot correspondant.
-    """
+    # SCENARIO: On demande un lot spécifique avec un ID valide.
+    # QUAND: get_lot_by_id est appelée.
+    # ALORS: Elle doit retourner le lot correspondant.
     # --- ARRANGE ---
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
@@ -64,11 +60,9 @@ def test_get_lot_by_id_success(mock_get_db):
 
 @patch('services.lot_service.get_db')
 def test_get_lot_by_id_not_found(mock_get_db):
-    """
-    SC├ëNARIO: On demande un lot qui n'existe pas.
-    QUAND: get_lot_by_id est appel├®e.
-    ALORS: Elle doit retourner None.
-    """
+    # SCENARIO: On demande un lot qui n'existe pas.
+    # QUAND: get_lot_by_id est appelée.
+    # ALORS: Elle doit retourner None.
     # --- ARRANGE ---
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
@@ -86,11 +80,9 @@ def test_get_lot_by_id_not_found(mock_get_db):
 @patch('services.lot_service.commit_session')
 @patch('services.lot_service.get_db')
 def test_update_lot_success(mock_get_db, mock_commit_session):
-    """
-    SC├ëNARIO: On met ├á jour les informations d'un lot.
-    QUAND: update_lot est appel├®e avec de nouvelles donn├®es.
-    ALORS: Elle doit appeler la session et retourner le lot modifi├®.
-    """
+    # SCENARIO: On met à jour les informations d'un lot.
+    # QUAND: update_lot est appelée avec de nouvelles données.
+    # ALORS: Elle doit appeler la session et retourner le lot modifié.
     # --- ARRANGE ---
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
@@ -113,11 +105,9 @@ def test_update_lot_success(mock_get_db, mock_commit_session):
 
 @patch('services.lot_service.get_db')
 def test_get_alertes_by_lot_success(mock_get_db):
-    """
-    SC├ëNARIO: On demande l'historique des alertes pour un lot.
-    QUAND: get_alertes_by_lot est appel├®e.
-    ALORS: Elle doit retourner la liste des alertes.
-    """
+    # SCENARIO: On demande l'historique des alertes pour un lot.
+    # QUAND: get_alertes_by_lot est appelée.
+    # ALORS: Elle doit retourner la liste des alertes.
     # --- ARRANGE ---
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
@@ -151,16 +141,14 @@ def test_get_alertes_by_lot_success(mock_get_db):
 @patch('services.lot_service.commit_session')
 @patch('services.lot_service.get_db')
 def test_update_lot_status_changes_status_to_perime(mock_get_db, mock_commit):
-    """
-    SC├ëNARIO: Un lot est stock├® depuis plus de 365 jours.
-    QUAND: update_lot_status est appel├®e.
-    ALORS: Le statut du lot doit devenir 'p├®rim├®'.
-    """
+    # SCENARIO: Un lot est stocké depuis plus de 365 jours.
+    # QUAND: update_lot_status est appelée.
+    # ALORS: Le statut du lot doit devenir 'périmé'.
     # --- ARRANGE ---
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
 
-    # Cr├®er un mock pour le lot
+    # Créer un mock pour le lot
     mock_lot = MagicMock()
     mock_lot.statut = StatutLot.CONFORME.value
     mock_lot.datSto = datetime.now(UTC) - timedelta(days=400) # P├®rim├®
@@ -185,11 +173,9 @@ def test_update_lot_status_changes_status_to_perime(mock_get_db, mock_commit):
 @patch('services.lot_service.commit_session')
 @patch('services.lot_service.get_db')
 def test_update_lot_status_keeps_vendu(mock_get_db, mock_commit):
-    """
-    SCÉNARIO: Un lot vendu a une date de sortie.
-    QUAND: update_lot_status est appelée.
-    ALORS: Le statut reste 'vendu' et n'est pas recalculé.
-    """
+    # SCÉNARIO: Un lot vendu a une date de sortie.
+    # QUAND: update_lot_status est appelée.
+    # ALORS: Le statut reste 'vendu' et n'est pas recalculé.
     # --- ARRANGE ---
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
