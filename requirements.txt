@@ -29,3 +29,4 @@ flasgger==0.9.7.1
 # Libraririe qui permet d'utiliser l'Authentification sécurisée "caching_sha2_password" par défaut dans MySQL 8.0
 # PyMySQL ne peut pas executer cela seul il faut la lib cryptography
 cryptography
+pytest==8.3.4
