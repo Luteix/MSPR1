@@ -30,3 +30,5 @@ flasgger==0.9.7.1
 # PyMySQL ne peut pas executer cela seul il faut la lib cryptography
 cryptography
 pytest==8.3.4
+pytest
+pytest-cov
