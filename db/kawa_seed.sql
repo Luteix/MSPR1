@@ -30,7 +30,7 @@ INSERT INTO Entrepots (idEntrepot, nom, adresse, limiteQte, idExploitation) VALU
 -- 4. Insertion d'utilisateurs brésiliens
 INSERT INTO Utilisateurs (idUtilisateur, nom, prenom, mail, mdp, idExploitation, idPoste) VALUES
 (1, 'Silva', 'Maria', 'maria@kawa.com', 'hash123', 1, 2),
-(2, 'Pereira', 'Lucas', 'lucas@kawa.com', 'hash123', 1, 1),
+(2, 'Dupont', 'Jean', 'jean@kawa.com', 'hash123', 1, 3),
 (3, 'Costa', 'Ana', 'ana@kawa.com', 'hash123', 2, 1),
 (4, 'Souza', 'Pedro', 'pedro@kawa.com', 'hash123', 2, 1),
 (5, 'Rocha', 'Juliana', 'juliana@kawa.com', 'hash123', 3, 1),
