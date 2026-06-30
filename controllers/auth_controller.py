@@ -19,9 +19,27 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/api')
 @auth_bp.route('/register', methods=['POST'])
 def register():
     """
-    Inscription d'un nouvel utilisateur
-    Body JSON: {nom, prenom, email, password, idExploitation, idPoste (optionnel)}
-    Returns: {user: {id, nom, prenom, email}, token: string}
+    Crée un utilisateur.
+    ---
+    tags:
+      - Authentification
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - nom
+            - prenom
+            - email
+            - password
+            - idExploitation
+    responses:
+      201:
+        description: Utilisateur créé
+      400:
+        description: Données invalides
     """
     try:
         data = request.get_json()
@@ -56,9 +74,24 @@ def register():
 @auth_bp.route('/login', methods=['POST'])
 def login():
     """
-    Connexion d'un utilisateur
-    Body JSON: {email, password}
-    Returns: {user: {...}, token: string}
+    Connecte un utilisateur.
+    ---
+    tags:
+      - Authentification
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - email
+            - password
+    responses:
+      200:
+        description: Connexion réussie
+      401:
+        description: Identifiants invalides
     """
     try:
         data = request.get_json()
@@ -87,9 +120,21 @@ def login():
 @auth_bp.route('/verify', methods=['GET'])
 def verify_token():
     """
-    Vérifie si un token est valide (pour le frontend)
-    Header: Authorization: Bearer <token>
-    Returns: {valid: true, user: {...}} ou 401
+    Vérifie un token JWT.
+    ---
+    tags:
+      - Authentification
+    parameters:
+      - name: Authorization
+        in: header
+        required: true
+        type: string
+        default: Bearer <token>
+    responses:
+      200:
+        description: Token valide
+      401:
+        description: Token invalide
     """
     try:
         auth_header = request.headers.get('Authorization', '')

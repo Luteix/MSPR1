@@ -7,7 +7,17 @@ entrepot_bp = Blueprint('entrepot', __name__, url_prefix='/api/entrepots')
 
 @entrepot_bp.route('', methods=['GET'])
 def get_entrepots():
-    """Liste des entrepôts"""
+    """
+    Liste les entrepôts.
+    ---
+    tags:
+      - Entrepôts
+    responses:
+      200:
+        description: Liste des entrepôts
+        schema:
+          type: array
+    """
     try:
         entrepots = EntrepotService.get_all_entrepots()
         result = [entrepot.to_dict() for entrepot in entrepots]
@@ -17,7 +27,24 @@ def get_entrepots():
 
 @entrepot_bp.route('/<string:entrepot_id>', methods=['GET'])
 def get_entrepot(entrepot_id):
-    """Détails entrepôt"""
+    """
+    Récupère un entrepôt.
+    ---
+    tags:
+      - Entrepôts
+    parameters:
+      - name: entrepot_id
+        in: path
+        required: true
+        type: string
+    responses:
+      200:
+        description: Entrepôt trouvé
+        schema:
+          type: object
+      404:
+        description: Entrepôt introuvable
+    """
     try:
         entrepot = EntrepotService.get_entrepot_by_id(entrepot_id)
         return jsonify(entrepot.to_dict(include_details=True)), 200
@@ -29,8 +56,10 @@ def get_entrepot(entrepot_id):
 @entrepot_bp.route('/<string:entrepot_id>/mesures', methods=['GET'])
 def get_mesures_by_entrepot(entrepot_id):
     """
-    Mesures température/humidité d'un entrepôt
+    Retourne les mesures d'un entrepôt.
     ---
+    tags:
+      - Entrepôts
     parameters:
       - name: entrepot_id
         in: path
@@ -42,7 +71,7 @@ def get_mesures_by_entrepot(entrepot_id):
         default: 30
     responses:
       200:
-        description: OK
+        description: Historique des mesures
         schema:
           type: array
     """
@@ -56,8 +85,10 @@ def get_mesures_by_entrepot(entrepot_id):
 @entrepot_bp.route('/<string:entrepot_id>/lots', methods=['GET'])
 def get_lots_by_entrepot(entrepot_id):
     """
-    Lots entrepôt
+    Liste les lots d'un entrepôt.
     ---
+    tags:
+      - Entrepôts
     parameters:
       - name: entrepot_id
         in: path
@@ -65,7 +96,7 @@ def get_lots_by_entrepot(entrepot_id):
         type: string
     responses:
       200:
-        description: OK
+        description: Liste des lots
         schema:
           type: array
     """
@@ -78,8 +109,10 @@ def get_lots_by_entrepot(entrepot_id):
 @entrepot_bp.route('/<string:entrepot_id>/lots', methods=['POST'])
 def create_lot_in_entrepot(entrepot_id):
     """
-    Crée un nouveau lot dans un entrepôt
+    Crée un lot dans un entrepôt.
     ---
+    tags:
+      - Entrepôts
     parameters:
       - name: entrepot_id
         in: path
@@ -95,8 +128,8 @@ def create_lot_in_entrepot(entrepot_id):
     responses:
       201:
         description: Lot créé
-        schema:
-          type: object
+      400:
+        description: Données invalides
     """
     try:
         data = request.get_json()
@@ -116,8 +149,10 @@ def create_lot_in_entrepot(entrepot_id):
 @entrepot_bp.route('', methods=['POST'])
 def create_entrepot():
     """
-    Crée un nouvel entrepôt
+    Crée un entrepôt.
     ---
+    tags:
+      - Entrepôts
     parameters:
       - name: body
         in: body
@@ -132,8 +167,8 @@ def create_entrepot():
     responses:
       201:
         description: Entrepôt créé
-        schema:
-          type: object
+      400:
+        description: Données invalides
     """
     try:
         data = request.get_json()
@@ -152,8 +187,10 @@ def create_entrepot():
 @entrepot_bp.route('/<string:entrepot_id>', methods=['PUT'])
 def update_entrepot(entrepot_id):
     """
-    Mesures entrepôt
+    Met à jour un entrepôt.
     ---
+    tags:
+      - Entrepôts
     parameters:
       - name: entrepot_id
         in: path
@@ -167,8 +204,8 @@ def update_entrepot(entrepot_id):
     responses:
       200:
         description: Entrepôt mis à jour
-        schema:
-          type: object
+      404:
+        description: Entrepôt introuvable
     """
     try:
         data = request.get_json()
@@ -184,8 +221,10 @@ def update_entrepot(entrepot_id):
 @entrepot_bp.route('/<string:entrepot_id>', methods=['DELETE'])
 def delete_entrepot(entrepot_id):
     """
-    Supprime un entrepôt
+    Supprime un entrepôt.
     ---
+    tags:
+      - Entrepôts
     parameters:
       - name: entrepot_id
         in: path
@@ -194,8 +233,8 @@ def delete_entrepot(entrepot_id):
     responses:
       200:
         description: Entrepôt supprimé
-        schema:
-          type: object
+      404:
+        description: Entrepôt introuvable
     """
     try:
         success = EntrepotService.delete_entrepot(entrepot_id)

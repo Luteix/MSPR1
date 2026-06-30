@@ -8,11 +8,13 @@ lot_bp = Blueprint('lot', __name__, url_prefix='/api/lots')
 @lot_bp.route('', methods=['GET'])
 def get_all_lots():
     """
-    Liste des lots
+    Liste les lots.
     ---
+    tags:
+      - Lots
     responses:
       200:
-        description: OK
+        description: Liste des lots
         schema:
           type: array
     """
@@ -25,8 +27,10 @@ def get_all_lots():
 @lot_bp.route('/<string:lot_id>', methods=['GET'])
 def get_lot(lot_id):
     """
-    Détails lot
+    Récupère un lot.
     ---
+    tags:
+      - Lots
     parameters:
       - name: lot_id
         in: path
@@ -34,9 +38,11 @@ def get_lot(lot_id):
         type: string
     responses:
       200:
-        description: OK
+        description: Lot trouvé
         schema:
           type: object
+      404:
+        description: Lot introuvable
     """
     try:
         lot = LotService.get_lot_by_id(lot_id)
@@ -49,8 +55,10 @@ def get_lot(lot_id):
 @lot_bp.route('/<string:lot_id>/mesures', methods=['GET'])
 def get_mesures_by_lot(lot_id):
     """
-    Mesures température/humidité d'un lot
+    Retourne les mesures d'un lot.
     ---
+    tags:
+      - Lots
     parameters:
       - name: lot_id
         in: path
@@ -64,6 +72,8 @@ def get_mesures_by_lot(lot_id):
         description: Historique des mesures
         schema:
           type: array
+      404:
+        description: Lot introuvable
     """
     try:
         # Récupérer d'abord les infos du lot pour obtenir l'ID de l'entrepôt et la date de stockage
@@ -80,8 +90,10 @@ def get_mesures_by_lot(lot_id):
 @lot_bp.route('/<string:lot_id>/alertes', methods=['GET'])
 def get_alertes_by_lot(lot_id):
     """
-    Historique des alertes d'un lot
+    Liste les alertes d'un lot.
     ---
+    tags:
+      - Lots
     parameters:
       - name: lot_id
         in: path
@@ -92,6 +104,8 @@ def get_alertes_by_lot(lot_id):
         description: Liste des alertes
         schema:
           type: array
+      404:
+        description: Lot introuvable
     """
     try:
         alertes = LotService.get_alertes_by_lot(lot_id)
@@ -102,8 +116,10 @@ def get_alertes_by_lot(lot_id):
 @lot_bp.route('/<string:lot_id>', methods=['PUT'])
 def update_lot(lot_id):
     """
-    Met à jour un lot
+    Met à jour un lot.
     ---
+    tags:
+      - Lots
     parameters:
       - name: lot_id
         in: path
@@ -117,8 +133,8 @@ def update_lot(lot_id):
     responses:
       200:
         description: Lot mis à jour
-        schema:
-          type: object
+      404:
+        description: Lot introuvable
     """
     try:
         data = request.get_json()

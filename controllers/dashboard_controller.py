@@ -51,7 +51,17 @@ def get_recent_alertes():
 
 @alerte_bp.route('/alertes', methods=['GET'])
 def get_all_alertes():
-    """Liste des alertes"""
+    """
+    Liste les alertes.
+    ---
+    tags:
+      - Alertes
+    responses:
+      200:
+        description: Liste des alertes
+        schema:
+          type: array
+    """
     try:
         alertes = DashboardService.get_all_alertes()
         # Les alertes sont déjà des dictionnaires retournés par le service
@@ -61,7 +71,25 @@ def get_all_alertes():
 
 @alerte_bp.route('/alertes', methods=['POST'])
 def create_alerte():
-    """Crée une alerte"""
+    """
+    Crée une alerte.
+    ---
+    tags:
+      - Alertes
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - idMesure
+    responses:
+      201:
+        description: Alerte créée
+      400:
+        description: Données invalides
+    """
     try:
         data = request.get_json()
         alerte = DashboardService.create_alerte(data)
