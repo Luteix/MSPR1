@@ -19,13 +19,13 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copie des fichiers de dépendances python
-COPY requirements.txt .
+COPY requirements.txt ./
 
 #Installation de la liste des dépendances utiles pour le porjet
 RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 
 # Copie du reste du code
-COPY . .
+COPY . ./
 
 # Exposition du port Flask
 EXPOSE 5000

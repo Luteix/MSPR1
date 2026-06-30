@@ -17,7 +17,9 @@ services:
       - futurekawa
 
   web:
-    build: .
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     container_name: futurekawapp
     restart: always
     ports:

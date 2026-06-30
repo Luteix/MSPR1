@@ -122,12 +122,16 @@ def setup_database(auto_mode=False):
     """
     print("\n=== BASE DE DONNÉES ===")
     
+    sql_dir = os.path.join(os.path.dirname(__file__), 'db')
+    schema_path = os.path.join(sql_dir, 'futurekawa.sql')
+    seed_path = os.path.join(sql_dir, 'kawa_seed.sql')
+
     # Vérifie si les fichiers SQL existent
-    if not os.path.exists('futurekawa.sql'):
+    if not os.path.exists(schema_path):
         print("[SKIP] futurekawa.sql non trouvé - BDD non initialisée")
         return True
     
-    if not os.path.exists('kawa_seed.sql'):
+    if not os.path.exists(seed_path):
         print("[SKIP] kawa_seed.sql non trouvé - données non insérées")
         return True
     
@@ -306,14 +310,14 @@ def setup_database(auto_mode=False):
         
         # futurekawa.sql (structure - mode non strict)
         print("\n[INFO] Exécution de futurekawa.sql (structure)...")
-        if execute_sql_file('futurekawa.sql', db_host, db_port, db_user, db_password, db_name=db_name, strict=False):
+        if execute_sql_file(schema_path, db_host, db_port, db_user, db_password, db_name=db_name, strict=False):
             print("[OK] Structure de la base créée")
         else:
             return False
         
         # kawa_seed.sql (données - mode strict, avec base sélectionnée)
         print("\n[INFO] Exécution de kawa_seed.sql (données)...")
-        if execute_sql_file('kawa_seed.sql', db_host, db_port, db_user, db_password, db_name=db_name, strict=True):
+        if execute_sql_file(seed_path, db_host, db_port, db_user, db_password, db_name=db_name, strict=True):
             print("[OK] Données insérées")
         else:
             print("[ERREUR] Échec de l'insertion des données")
