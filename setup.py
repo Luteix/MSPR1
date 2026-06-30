@@ -12,7 +12,6 @@ UTILITÉ: Script d'installation automatique pour nouveaux environnements
 import os
 import sys
 import re
-import secrets
 import shutil
 import subprocess
 
@@ -24,10 +23,6 @@ try:
     import pymysql.constants
 except ImportError:
     pymysql = None
-
-def generate_jwt_secret():
-    """Génère une clé JWT sécurisée de 64 caractères hexadécimaux"""
-    return secrets.token_hex(32)
 
 def setup_config():
     """
@@ -49,27 +44,10 @@ def setup_config():
     
     print("[INFO] config.py manquant - Création depuis le template...")
     
-    # Lit le template
-    with open('config.example.py', 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    # Génère une nouvelle clé JWT
-    new_secret = generate_jwt_secret()
-    print(f"[INFO] Nouvelle clé JWT générée: {new_secret[:16]}...")
-    
-    # Remplace la clé par défaut
-    content = content.replace(
-        "JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'votre-cle-super-secrete-a-changer')",
-        f'JWT_SECRET_KEY = "{new_secret}"'
-    )
-    
-    # Écrit config.py
-    with open('config.py', 'w', encoding='utf-8') as f:
-        f.write(content)
+    shutil.copyfile('config.example.py', 'config.py')
     
     print("[OK] config.py créé avec succès!")
-    print("   ⚠️  Ce fichier contient votre clé JWT privée")
-    print("   ⚠️  Ne le partagez pas et ne le commitez pas (déjà dans .gitignore)")
+    print("   ⚠️  Les valeurs JWT seront lues depuis .env ou l'environnement")
     
     return True
 
