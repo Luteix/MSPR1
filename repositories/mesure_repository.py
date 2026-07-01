@@ -65,9 +65,9 @@ class MesureRepository:
         try:
             result = session.execute(text("""
                 SELECT p.temperatureMin, p.temperatureMax, p.humiditeMin, p.humiditeMax
-                FROM entrepot e
-                JOIN exploitation ex ON e.idExploitation = ex.idExploitation
-                JOIN pays p ON ex.idPays = p.idPays
+                FROM Entrepots e
+                JOIN Exploitations ex ON e.idExploitation = ex.idExploitation
+                JOIN Pays p ON ex.idPays = p.idPays
                 WHERE e.idEntrepot = :idEntrepot
             """), {"idEntrepot": entrepot_id}).fetchone()
             return result

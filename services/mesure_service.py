@@ -63,7 +63,11 @@ class MesureService:
         mesure = MesureRepository.create(mesure_data)
         
         # Génération des alertes
-        MesureService._generer_alertes(mesure)
+        try:
+            MesureService._generer_alertes(mesure)
+        except Exception as e:
+            # Log l'erreur d'alerte mais ne bloque pas l'insertion de la mesure
+            print(f"Erreur lors de la génération des alertes : {str(e)}")
         
         return mesure
     
