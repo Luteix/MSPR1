@@ -11,14 +11,14 @@ from models import LotGrains, Entrepot, Pays, Mesure, Alerte, StatutLot, Exploit
 
 @patch('services.dashboard_service.get_db')
 def test_get_dashboard_summary_success(mock_get_db):
-    # SC├ëNARIO: On demande le r├®sum├® du dashboard.
-    # QUAND: get_dashboard_summary est appel├®e.
-    # ALORS: Elle doit retourner les m├®triques globales et le r├®sum├® par pays.
+    # Scénario: On demande le résumé du dashboard.
+    # QUAND: get_dashboard_summary est appelée.
+    # ALORS: Elle doit retourner les métriques globales et le résumé par pays.
     # --- ARRANGE ---
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
 
-    # Cr├®ation des mocks persistants hors de la fonction side_effect
+    # Création des mocks persistants hors de la fonction side_effect
     lot_query_mock = MagicMock()
     lot_filter_mock = MagicMock()
     lot_filter_mock.count.side_effect = [10, 1] # stockés, périmés
@@ -76,13 +76,13 @@ def test_get_dashboard_summary_success(mock_get_db):
     # --- ASSERT ---
     assert mock_get_db.called
     
-    # V├®rifier les m├®triques globales
+    # Vérifier les métriques globales
     assert result['metrics']['lotsStockes'] == 10
     assert result['metrics']['lotsAlerte'] == 2
     assert result['metrics']['lotsPerimes'] == 1
     assert result['metrics']['entrepotsActifs'] == 4
 
-    # V├®rifier le r├®sum├® par pays
+    # Vérifier le résumé par pays
     assert len(result['summaryByCountry']) == 1
     country_summary = result['summaryByCountry'][0]
     assert country_summary['pays']['nom'] == 'Testland'
@@ -162,9 +162,9 @@ def test_get_dashboard_summary_filters_only_active_lots(mock_get_db):
 
 @patch('services.dashboard_service.DashboardRepository.get_alertes_with_hierarchy')
 def test_get_recent_alertes_success(mock_get_alertes):
-    # SC├ëNARIO: On demande les alertes r├®centes.
-    # QUAND: get_recent_alertes est appel├®e.
-    # ALORS: Elle doit retourner une liste limit├®e d'alertes.
+    # Scénario: On demande les alertes récentes.
+    # QUAND: get_recent_alertes est appelée.
+    # ALORS: Elle doit retourner une liste limitée d'alertes.
     # --- ARRANGE ---
     mock_alertes = [{'idAlerte': 5}, {'idAlerte': 4}, {'idAlerte': 3}, {'idAlerte': 2}]
     mock_get_alertes.return_value = mock_alertes
@@ -180,9 +180,9 @@ def test_get_recent_alertes_success(mock_get_alertes):
 
 @patch('services.dashboard_service.DashboardRepository.create_alerte')
 def test_create_alerte_success(mock_create_alerte):
-    # SC├ëNARIO: On cr├®e une alerte avec des donn├®es valides.
-    # QUAND: create_alerte est appel├®e.
-    # ALORS: Elle doit appeler le repository et retourner l'alerte cr├®├®e.
+    # Scénario: On crée une alerte avec des données valides.
+    # QUAND: create_alerte est appelée.
+    # ALORS: Elle doit appeler le repository et retourner l'alerte créée.
     # --- ARRANGE ---
     alerte_data = {'idMesure': 123}
     mock_alerte = MagicMock()

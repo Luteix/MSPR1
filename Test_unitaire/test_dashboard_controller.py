@@ -4,6 +4,7 @@ from app import create_app
 
 
 def test_get_recent_alertes_route_returns_alertes():
+    # Teste la route GET /api/alertes/recentes avec pagination
     app = create_app()
     client = app.test_client()
 
@@ -21,6 +22,7 @@ def test_get_recent_alertes_route_returns_alertes():
 
 
 def test_get_recent_alertes_route_supports_legacy_alias():
+    # Vérifie que l'alias /api/alertes/recent fonctionne aussi
     app = create_app()
     client = app.test_client()
 

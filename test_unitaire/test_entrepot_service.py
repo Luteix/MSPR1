@@ -8,6 +8,7 @@ from services.entrepot_service import EntrepotService
 
 @patch('services.entrepot_service.EntrepotRepository.get_all')
 def test_get_all_entrepots(mock_get_all):
+    # Vérifie que le service retourne bien la liste des entrepôts du repo
     mock_get_all.return_value = [MagicMock(), MagicMock()]
     result = EntrepotService.get_all_entrepots()
     mock_get_all.assert_called_once()
@@ -15,6 +16,7 @@ def test_get_all_entrepots(mock_get_all):
 
 @patch('services.entrepot_service.EntrepotRepository.get_by_id')
 def test_get_entrepot_by_id_success(mock_get_by_id):
+    # Cas nominal: récupère un entrepôt par son ID
     mock_entrepot = MagicMock()
     mock_get_by_id.return_value = mock_entrepot
     result = EntrepotService.get_entrepot_by_id(1)
@@ -23,12 +25,14 @@ def test_get_entrepot_by_id_success(mock_get_by_id):
 
 @patch('services.entrepot_service.EntrepotRepository.get_by_id')
 def test_get_entrepot_by_id_not_found(mock_get_by_id):
+    # Cas erreur: lève une exception si l'entrepôt n'existe pas
     mock_get_by_id.return_value = None
     with pytest.raises(ValueError, match='Entrepot non trouvé'):
         EntrepotService.get_entrepot_by_id(999)
 
 @patch('services.entrepot_service.get_db')
 def test_get_mesures_by_entrepot(mock_get_db):
+    # Récupère les mesures enregistrées pour un entrepôt donné
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
     mock_mesure = MagicMock()
@@ -43,6 +47,7 @@ def test_get_mesures_by_entrepot(mock_get_db):
 
 @patch('services.entrepot_service.get_db')
 def test_get_lots_by_entrepot(mock_get_db):
+    # Récupère les lots stockés dans un entrepôt
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
     mock_lot = MagicMock()
@@ -58,6 +63,7 @@ def test_get_lots_by_entrepot(mock_get_db):
 @patch('services.entrepot_service.commit_session')
 @patch('services.entrepot_service.get_db')
 def test_create_lot_in_entrepot_success(mock_get_db, mock_commit):
+    # Crée un lot dans un entrepôt et valide la sauvegarde DB
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
     mock_session.query.return_value.filter.return_value.first.return_value = MagicMock()
@@ -78,6 +84,7 @@ def test_create_lot_in_entrepot_success(mock_get_db, mock_commit):
 @patch('services.entrepot_service.commit_session')
 @patch('services.entrepot_service.get_db')
 def test_create_entrepot(mock_get_db, mock_commit):
+    # Crée un nouvel entrepôt avec validation des champs requis
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
     mock_entrepot = MagicMock()
@@ -94,6 +101,7 @@ def test_create_entrepot(mock_get_db, mock_commit):
 @patch('services.entrepot_service.commit_session')
 @patch('services.entrepot_service.get_db')
 def test_update_entrepot(mock_get_db, mock_commit):
+    # Modifie les informations d'un entrepôt existant
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
     mock_entrepot = MagicMock()
@@ -111,6 +119,7 @@ def test_update_entrepot(mock_get_db, mock_commit):
 @patch('services.entrepot_service.commit_session')
 @patch('services.entrepot_service.get_db')
 def test_delete_entrepot(mock_get_db, mock_commit):
+    # Supprime un entrepôt de la DB
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
     mock_entrepot = MagicMock()

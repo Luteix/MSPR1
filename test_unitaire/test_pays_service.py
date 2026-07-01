@@ -9,6 +9,7 @@ from models import Exploitation, Entrepot, LotGrains
 
 @patch('services.pays_service.get_db')
 def test_get_all_pays(mock_get_db):
+    # Récupère la liste complète des pays
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
     mock_pays = MagicMock()
@@ -23,6 +24,7 @@ def test_get_all_pays(mock_get_db):
 
 @patch('services.pays_service.get_db')
 def test_get_pays_by_id_success(mock_get_db):
+    # Récupère un pays spécifique par son ID
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
     mock_pays = MagicMock()
@@ -36,6 +38,7 @@ def test_get_pays_by_id_success(mock_get_db):
 
 @patch('services.pays_service.get_db')
 def test_get_pays_by_id_not_found(mock_get_db):
+    # Retourne None si le pays n'existe pas
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
     mock_session.query.return_value.filter.return_value.first.return_value = None
@@ -47,6 +50,7 @@ def test_get_pays_by_id_not_found(mock_get_db):
 
 @patch('services.pays_service.get_db')
 def test_get_exploitations_by_pays(mock_get_db):
+    # Récupère toutes les exploitations d'un pays avec stats (lots, entrepôts, alertes)
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
     
@@ -63,7 +67,7 @@ def test_get_exploitations_by_pays(mock_get_db):
     
     lot_query_mock = MagicMock()
     lot_filter_mock = MagicMock()
-    lot_filter_mock.count.side_effect = [10, 0, 1] # 10 lots, 0 p├®rim├®, 1 alerte
+    lot_filter_mock.count.side_effect = [10, 0, 1]  # 10 lots, 0 périmés, 1 alerte
     lot_query_mock.join.return_value.filter.return_value = lot_filter_mock
     
     def mock_query_side_effect(model):
@@ -88,6 +92,7 @@ def test_get_exploitations_by_pays(mock_get_db):
 
 @patch('services.pays_service.get_db')
 def test_get_mesures_history(mock_get_db):
+    # Récupère l'historique des mesures moyennes par jour pour un pays
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
     
@@ -95,7 +100,7 @@ def test_get_mesures_history(mock_get_db):
     mock_mesure.date.strftime.return_value = '2024-05-21'
     mock_mesure.avgTemp = 22.5
     
-    # Simule l'appel complexe : func.date(...), func.avg(...)
+    # Simule: query().join().join().filter().group_by().all()
     mock_session.query.return_value.join.return_value.join.return_value.filter.return_value.group_by.return_value.all.return_value = [mock_mesure]
     
     result = PaysService.get_mesures_history(1)
@@ -108,15 +113,16 @@ def test_get_mesures_history(mock_get_db):
 @patch('services.pays_service.commit_session')
 @patch('services.pays_service.get_db')
 def test_create_pays(mock_get_db, mock_commit):
+    # Crée un nouveau pays avec ses seuils de température/humidité
     mock_session = MagicMock()
     mock_get_db.return_value = mock_session
     
     mock_pays = MagicMock()
-    mock_pays.to_dict.return_value = {'idPays': 1, 'nom': 'Br├®sil'}
+    mock_pays.to_dict.return_value = {'idPays': 1, 'nom': 'Brésil'}
     
     with patch('services.pays_service.Pays', return_value=mock_pays):
         data = {
-            'nom': 'Br├®sil',
+            'nom': 'Brésil',
             'temperatureMin': 15,
             'temperatureMax': 25,
             'humiditeMin': 50,
@@ -126,5 +132,5 @@ def test_create_pays(mock_get_db, mock_commit):
         
         mock_session.add.assert_called_once_with(mock_pays)
         mock_commit.assert_called_once()
-        assert result['nom'] == 'Br├®sil'
+        assert result['nom'] == 'Brésil'
         mock_session.close.assert_called_once()
